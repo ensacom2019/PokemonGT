@@ -67,11 +67,13 @@
 .ranking-submit label { display:grid; gap:5px; color:var(--muted); font-size:11px; text-align:left; }
 .ranking-submit input { min-width:0; height:38px; padding:0 9px; border:1px solid var(--line); outline:0; color:var(--ink); background:#0b1218; font:700 13px var(--mono); }
 .ranking-submit input:focus { border-color:var(--cyan); box-shadow:0 0 0 2px rgba(101,229,226,.14); }
-.google-sign-in { min-height:38px; padding:0 10px; color:#fff; border-color:#6387d4; background:#2d4b8d; }
+.google-sign-in { display:grid; width:40px; min-width:40px; min-height:40px; padding:0; place-items:center; overflow:hidden; border:0; border-radius:20px; background:transparent; box-shadow:none; }
+.google-sign-in img { display:block; width:40px; height:40px; }
+.google-sign-in:hover:not(:disabled), .google-sign-in:focus-visible { transform:translateY(-1px); box-shadow:0 3px 0 rgba(0,0,0,.28); }
 .ranking-submit-status { grid-column:1 / -1; min-height:16px; margin:0; color:var(--muted); font-size:11px; }
 .ranking-submit-status.ready { color:var(--lime); }
 .ranking-submit-status.error { color:var(--coral); }
-@media (max-width:700px) { .title-ranking { position:relative; top:auto; right:auto; width:100%; max-height:none; margin-top:14px; } .hero-side { display:flex; flex-direction:column; } .result-ranking .ranking-list { grid-template-columns:1fr; } .ranking-submit { grid-template-columns:1fr; } .ranking-submit .button { width:100%; } }
+@media (max-width:700px) { .title-ranking { position:relative; top:auto; right:auto; width:100%; max-height:none; margin-top:14px; } .hero-side { display:flex; flex-direction:column; } .result-ranking .ranking-list { grid-template-columns:1fr; } .ranking-submit { grid-template-columns:1fr; } .ranking-submit .button { width:100%; } .ranking-submit .google-sign-in { width:40px; } }
 
 /* Four generation columns, with grass / fire / water stacked vertically. */
 .generation-roster.compact-roster { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; width:min(100%,1040px); margin:0 auto; }

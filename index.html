@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#10141f" />
     <title>포켓몬 // 그리드 배틀</title>
     <link rel="stylesheet" href="styles.css?v=5" />
-  <link rel="stylesheet" href="backgrounds.css?v=28" />
+  <link rel="stylesheet" href="backgrounds.css?v=29" />
   </head>
   <body>
     <div class="scanlines" aria-hidden="true"></div>
@@ -85,7 +85,9 @@
         <section id="result-ranking" class="ranking-panel result-ranking" aria-labelledby="result-ranking-title" hidden>
           <div class="ranking-heading"><span>GLOBAL RANKING</span><strong id="result-ranking-title">랭킹 등록</strong></div>
           <div id="ranking-submit" class="ranking-submit">
-            <button id="google-sign-in" class="button google-sign-in" type="button">Google로 로그인</button>
+            <button id="google-sign-in" class="button google-sign-in" type="button" aria-label="Google로 로그인" title="Google로 로그인">
+              <img src="assets/ui/google-sign-in.svg" alt="" aria-hidden="true" />
+            </button>
             <label>닉네임<input id="ranking-nickname" type="text" maxlength="16" autocomplete="nickname" placeholder="2~16자" /></label>
             <button id="save-ranking" class="button button-primary" type="button" disabled>기록 저장</button>
             <p id="ranking-submit-status" class="ranking-submit-status">Google 로그인 후 닉네임을 입력하세요.</p>
@@ -110,6 +112,6 @@
     <script src="title-fixes.js?v=3"></script>
     <script src="score.js?v=2"></script>
     <script src="rewards.js?v=8"></script>
-    <script src="ranking-firebase.js?v=2"></script>
+    <script src="ranking-firebase.js?v=3"></script>
   </body>
 </html>

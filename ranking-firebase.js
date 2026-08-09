@@ -76,7 +76,9 @@
   };
   const updateAuthUi = async (firebase) => {
     const signedIn = Boolean(currentUser);
-    googleButton.textContent = signedIn ? 'Google 로그아웃' : 'Google로 로그인';
+    const googleAction = signedIn ? 'Google 로그아웃' : 'Google로 로그인';
+    googleButton.setAttribute('aria-label', googleAction);
+    googleButton.setAttribute('title', googleAction);
     saveButton.disabled = !signedIn;
     if (!signedIn) {
       setSubmitStatus('Google 로그인 후 닉네임을 입력하세요.');
