@@ -249,7 +249,25 @@
   const distanceBetween = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
   const virtualFighter = (fighter, position) => ({ ...fighter, ...position });
 
-  const movementScore = (fighter, target, card, position) => {
+  const attackSetupScore = (fighter, target, cards, position, nx, ny) => {
+    const attacker = virtualFighter(fighter, { ...position, x: nx, y: ny });
+    const facingDistance = fighter.side === 'player' ? target.x - nx : nx - target.x;
+    if (facingDistance < 1) return 0;
+    return cards
+      .filter((card) => card.kind === 'attack' && card.energy <= position.energy)
+      .reduce((best, card) => {
+        if (attackPatternContains(attacker, target, card)) return Math.max(best, 340 + card.damage + (card.priority || 0) * 8);
+        const verticalOffset = target.y - ny;
+        const canAimFromHere = cardRangePattern(card).some((index) => {
+          const horizontalOffset = index % 3 - 1;
+          const patternVerticalOffset = Math.floor(index / 3) - 1;
+          return horizontalOffset >= 0 && patternVerticalOffset === verticalOffset;
+        });
+        return Math.max(best, canAimFromHere ? 145 + card.damage + (card.priority || 0) * 6 : 0);
+      }, 0);
+  };
+
+  const movementScore = (fighter, target, card, position, cards) => {
     const delta = moveFor(fighter, card);
     const nx = clamp(position.x + delta.dx, 0, 5);
     const ny = clamp(position.y + delta.dy, 0, 4);
@@ -263,10 +281,13 @@
     const isBackward = fighter.side === 'player' ? delta.dx < 0 : delta.dx > 0;
     const isLateral = delta.dx === 0 && delta.dy !== 0;
     const underPressure = before <= 3 || position.hp <= (fighter.maxHp || 100) * 0.45;
+    const setupScore = attackSetupScore(fighter, target, cards, position, nx, ny);
     if (profile === 'rusher') score += isForward ? 85 : isLateral ? -35 : -70;
     if (profile === 'flanker') score += isLateral ? 150 : isForward ? 20 : -25;
     if (profile === 'kiter') score += underPressure ? (isBackward ? 210 : isLateral ? 105 : -130) : (isLateral ? 75 : isForward ? 25 : 20);
     if (profile === 'sentinel') score += isLateral ? 95 : underPressure && isBackward ? 120 : isForward ? 15 : 5;
+    score += setupScore;
+    if (isLateral && setupScore > 0) score += 120;
     if (hazardAt(nx, ny)) score -= 280;
     if (hazardAt(position.x, position.y)) score += 180;
     if (card.id === BACKSTEP_ID) score += before <= 1 ? 210 : -120;
@@ -276,7 +297,7 @@
   const scoreCard = (fighter, target, card, position, cards) => {
     if (card.energy > position.energy) return -10000;
     if (card.kind === 'evolution') return position.evolutionReady ? 1500 : -10000;
-    if (card.kind === 'move') return movementScore(fighter, target, card, position);
+    if (card.kind === 'move') return movementScore(fighter, target, card, position, cards);
     if (card.kind === 'attack') {
       const attacker = virtualFighter(fighter, position);
       const hit = attackPatternContains(attacker, target, card);
@@ -318,7 +339,11 @@
       let best = candidates[0];
       let bestScore = -Infinity;
       candidates.forEach((card) => {
-        const score = scoreCard(fighter, target, card, position, cards) + (3 - slot) * (card.priority || 0);
+        const delta = card.kind === 'move' ? moveFor(fighter, card) : null;
+        const isOpeningForwardMove = state.round === 1 && state.turn === 0 && slot === 0 && delta && (fighter.side === 'player' ? delta.dx > 0 : delta.dx < 0);
+        const openingLateralSetup = delta ? attackSetupScore(fighter, target, cards, position, clamp(position.x + delta.dx, 0, 5), clamp(position.y + delta.dy, 0, 4)) : 0;
+        const isOpeningUnplannedLateralMove = state.round === 1 && state.turn === 0 && slot === 0 && delta?.dx === 0 && delta.dy !== 0 && openingLateralSetup === 0;
+        const score = scoreCard(fighter, target, card, position, cards) + (3 - slot) * (card.priority || 0) + (isOpeningForwardMove ? -10000 : 0) + (isOpeningUnplannedLateralMove ? -180 : 0);
         if (score > bestScore) { best = card; bestScore = score; }
       });
       if (!best) break;
