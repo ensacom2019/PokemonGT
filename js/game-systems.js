@@ -156,6 +156,8 @@
     eventPanel.hidden = true;
     nextButton.hidden = false;
     writeLog(`${event.name} 효과를 얻었습니다.`, 'evolution');
+    state.stage = state.eventStage;
+    state.pendingStageAdvance = true;
     window.startNextBattle();
   };
   const showStageEvent = (stage) => {
@@ -176,12 +178,12 @@
     eventPanel.hidden = false;
   };
   nextButton?.addEventListener('click', (event) => {
-    const clearedStage = state.stage || 1;
-    if (state.resultWinnerSide !== 'player' || !state.pendingStageAdvance || !state.rewardSelected || clearedStage % 3 !== 0 || state.eventResolvedStage === clearedStage) return;
+    const eventStage = (state.stage || 1) + 1;
+    if (state.resultWinnerSide !== 'player' || !state.pendingStageAdvance || !state.rewardSelected || eventStage % 3 !== 0 || state.eventResolvedStage === eventStage) return;
     event.preventDefault();
     event.stopImmediatePropagation();
-    state.eventResolvedStage = clearedStage;
-    showStageEvent(clearedStage);
+    state.eventResolvedStage = eventStage;
+    showStageEvent(eventStage);
   }, true);
 
   window.renderRoster();
