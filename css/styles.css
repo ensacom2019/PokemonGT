@@ -1,4 +1,4 @@
-@font-face { font-family:'NanumGothicLocal'; src:url('assets/fonts/NanumGothicBold.otf') format('opentype'); font-style:normal; font-weight:700; font-display:swap; }
+@font-face { font-family:'NanumGothicLocal'; src:url('../assets/fonts/NanumGothicBold.otf') format('opentype'); font-style:normal; font-weight:700; font-display:swap; }
 
 :root { --ink:#edf3f2; --muted:#91a1a0; --bg:#0b1118; --panel:#121c25; --panel-2:#17242d; --line:rgba(237,243,242,.16); --lime:#c8f255; --cyan:#65e5e2; --coral:#ff695e; --amber:#ffbd62; --display:'NanumGothicLocal','Malgun Gothic',sans-serif; --mono:'NanumGothicLocal','Malgun Gothic',sans-serif; }
 * { box-sizing:border-box; }

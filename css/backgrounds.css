@@ -15,9 +15,9 @@
   background:linear-gradient(180deg,rgba(5,17,20,.25),rgba(5,17,20,.08) 45%,rgba(5,17,20,.3));
 }
 
-.battle-grid[data-theme="grassland"] { background-image:url('assets/backgrounds/grassland.png'); }
-.battle-grid[data-theme="forest"] { background-image:url('assets/backgrounds/forest.png'); }
-.battle-grid[data-theme="lake"] { background-image:url('assets/backgrounds/lake.png'); }
+.battle-grid[data-theme="grassland"] { background-image:url('../assets/backgrounds/grassland.png'); }
+.battle-grid[data-theme="forest"] { background-image:url('../assets/backgrounds/forest.png'); }
+.battle-grid[data-theme="lake"] { background-image:url('../assets/backgrounds/lake.png'); }
 
 .battle-grid .grid-cell { z-index:1; }
 

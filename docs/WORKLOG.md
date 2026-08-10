@@ -48,3 +48,4 @@
 - 2026-08-10: Firebase Firestore를 서울 리전(`asia-northeast3`)으로 생성하고, GitHub Pages 배포 및 Firebase 연동 정보를 `DEPLOYMENT.md`에 정리했다.
 - 2026-08-10: `ensacom2019/PokemonGT` 저장소의 `main` 브랜치에 게임을 배포하고 GitHub Pages를 활성화했다. Firebase Authentication의 Google 로그인과 GitHub Pages 승인 도메인도 연결했다.
 - 2026-08-10: 랭킹 등록 화면의 Google 로그인 버튼을 제공받은 텍스트 없는 아이콘 버튼으로 교체했다. 로그인 상태에 따라 접근성 레이블과 도움말만 로그인·로그아웃으로 바뀐다.
+- 2026-08-10: 배포 파일을 역할별 폴더(`css/`, `js/`, `docs/`, `firebase/`, `assets/`)로 정리했다. GitHub Pages 진입점은 루트의 `index.html`로 유지한다.

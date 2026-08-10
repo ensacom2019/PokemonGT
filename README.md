@@ -4,13 +4,13 @@
 
 ## 실행
 
-`pokemon-grid-battle` 폴더를 정적 파일 서버로 열면 됩니다. 예를 들어 VS Code Live Server를 사용하거나, 상위 폴더에서 아래처럼 실행할 수 있습니다.
+프로젝트 루트를 정적 파일 서버로 열면 됩니다. 예를 들어 VS Code Live Server를 사용하거나, 프로젝트 루트에서 아래처럼 실행할 수 있습니다.
 
 ```powershell
 python -m http.server 5500
 ```
 
-그 다음 `http://localhost:5500/pokemon-grid-battle/`를 엽니다.
+그 다음 `http://localhost:5500/`를 엽니다.
 
 ## 이미지
 
@@ -26,4 +26,4 @@ python -m http.server 5500
 
 ## 작업 인수인계
 
-다음 수정 전에는 [WORKLOG.md](WORKLOG.md)를 먼저 확인하고, 화면 배치·자산 앵커·표기 규칙처럼 재사용할 결정은 완료할 때마다 같은 문서에 추가합니다.
+다음 수정 전에는 [작업 기록](docs/WORKLOG.md)을 먼저 확인하고, 화면 배치·자산 앵커·표기 규칙처럼 재사용할 결정은 완료할 때마다 같은 문서에 추가합니다.
