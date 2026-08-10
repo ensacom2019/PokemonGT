@@ -13,6 +13,7 @@
   ];
 
   state.playerBonusCards = state.playerBonusCards || [];
+  state.cardEnhancements = state.cardEnhancements || {};
   state.playerMaxHp = state.playerMaxHp || 100;
   state.playerMaxEnergy = state.playerMaxEnergy || 100;
   state.pendingRecovery = null;
@@ -27,14 +28,29 @@
     ...state.playerBonusCards.map((card) => card.id)
   ]);
   const shuffle = (items) => [...items].sort(() => Math.random() - 0.5);
+  const enhancedCard = (card) => {
+    if (!card) return card;
+    const enhancement = state.cardEnhancements[card.id];
+    if (!enhancement) return card;
+    return {
+      ...card,
+      name: enhancement.level ? `${card.name} +${enhancement.level}` : card.name,
+      label: enhancement.level ? `${card.label || card.name} +${enhancement.level}` : card.label,
+      damage: Number.isFinite(card.damage) ? card.damage + (enhancement.damage || 0) : card.damage,
+      energy: Math.max(0, (card.energy || 0) - (enhancement.energyReduction || 0)),
+      priority: (card.priority || 0) + (enhancement.priority || 0)
+    };
+  };
+  window.enhancedCard = enhancedCard;
+
   const cardByIdOriginal = window.cardById;
-  window.cardById = (id) => state.playerBonusCards.find((card) => card.id === id) || cardByIdOriginal?.(id);
+  window.cardById = (id) => enhancedCard(state.playerBonusCards.find((card) => card.id === id) || cardByIdOriginal?.(id));
 
   const getHandOriginal = window.getHand;
   window.getHand = (fighter) => {
     const base = getHandOriginal?.(fighter) || [];
     if (fighter?.side !== 'player') return base;
-    return [...base, ...state.playerBonusCards];
+    return [...base, ...state.playerBonusCards].map(enhancedCard);
   };
 
   window.projectedEnergyForQueue = (queue) => {
@@ -112,6 +128,7 @@
 
   const resetRunState = () => {
     state.playerBonusCards = [];
+    state.cardEnhancements = {};
     state.playerMaxHp = 100;
     state.playerMaxEnergy = 100;
     state.pendingRecovery = null;
@@ -135,7 +152,15 @@
     const reward = state.rewardOffers.find((card) => card.id === id);
     if (!reward) return;
     state.rewardSelected = reward.id;
-    if (reward.kind === 'upgrade') {
+    if (reward.kind === 'card-upgrade') {
+      const enhanced = state.cardEnhancements[reward.targetCardId] || { level: 0, damage: 0, energyReduction: 0, priority: 0 };
+      state.cardEnhancements[reward.targetCardId] = {
+        ...enhanced,
+        level: enhanced.level + 1,
+        damage: enhanced.damage + 6,
+        energyReduction: enhanced.energyReduction + 2
+      };
+    } else if (reward.kind === 'upgrade') {
       const amount = reward.amount || 10;
       const maxKey = reward.upgrade === 'maxHp' ? 'maxHp' : 'maxEnergy';
       const currentKey = reward.upgrade === 'maxHp' ? 'hp' : 'energy';
@@ -156,7 +181,12 @@
     renderStageRewards();
     document.querySelectorAll('.reward-card').forEach((button) => button.classList.toggle('selected', button.dataset.reward === id));
     if (nextButton) { nextButton.disabled = false; nextButton.innerHTML = '\uB2E4\uC74C \uC804\uD22C <span>→</span>'; }
-    writeLog(reward.kind === 'upgrade' ? `${reward.name} \uC2A4\uD0EF\uC774 \uC601\uAD6C \uC801\uC6A9\uB418\uC5C8\uC2B5\uB2C8\uB2E4.` : `${reward.name} \uCE74\uB4DC\uB97C \uD68D\uB4DD\uD588\uC2B5\uB2C8\uB2E4.`, 'evolution');
+    const message = reward.kind === 'upgrade'
+      ? `${reward.name} \uC2A4\uD0EF\uC774 \uC601\uAD6C \uC801\uC6A9\uB418\uC5C8\uC2B5\uB2C8\uB2E4.`
+      : reward.kind === 'card-upgrade'
+        ? `${reward.name} \uCE74\uB4DC\uB97C \uAC15\uD654\uD588\uC2B5\uB2C8\uB2E4.`
+        : `${reward.name} \uCE74\uB4DC\uB97C \uD68D\uB4DD\uD588\uC2B5\uB2C8\uB2E4.`;
+    writeLog(message, 'evolution');
   };
 
   const showReward = () => {
@@ -171,10 +201,20 @@
       maxEnergy
     };
     state.pendingStageAdvance = true;
-    state.rewardOffers = shuffle(REWARD_POOL.filter((card) => !ownedIds().has(card.id))).slice(0, 3);
+    const upgradeOffers = shuffle((getHand(fighter) || [])
+      .filter((card) => card.kind === 'attack')
+      .map((card) => ({
+        id: `card-upgrade:${card.id}`,
+        targetCardId: card.id,
+        name: `${card.name} \uAC15\uD654`,
+        ko: `\uD53C\uD574 +6 · \uC758\uC695 -2 (${card.name})`,
+        icon: '\u2726',
+        kind: 'card-upgrade'
+      }))).slice(0, 4);
+    state.rewardOffers = shuffle([...REWARD_POOL.filter((card) => !ownedIds().has(card.id)), ...upgradeOffers]).slice(0, 3);
     state.rewardSelected = null;
     rewardOptions.innerHTML = state.rewardOffers.map((card) => {
-      const role = card.kind === 'attack' ? '\uACF5\uACA9' : card.kind === 'move' ? '\uC774\uB3D9' : '\uC2A4\uD0EF \uAC15\uD654';
+      const role = card.kind === 'attack' ? '\uACF5\uACA9' : card.kind === 'move' ? '\uC774\uB3D9' : card.kind === 'card-upgrade' ? '\uCE74\uB4DC \uAC15\uD654' : '\uC2A4\uD0EF \uAC15\uD654';
       const stat = card.kind === 'attack' ? `\uD53C\uD574 ${card.damage} · \uC758\uC695 ${card.energy} · \uC0AC\uAC70\uB9AC ${card.range} · \uC6B0\uC120 ${card.priority}` : card.ko;
       return `<button type="button" class="reward-card ${card.kind}" data-reward="${card.id}"><span class="card-badge">${role}</span><span class="card-icon">${card.icon}</span><strong>${card.name}</strong><small>${stat}</small></button>`;
     }).join('');

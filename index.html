@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#10141f" />
     <title>포켓몬 // 그리드 배틀</title>
     <link rel="stylesheet" href="css/styles.css?v=5" />
-    <link rel="stylesheet" href="css/backgrounds.css?v=29" />
+    <link rel="stylesheet" href="css/backgrounds.css?v=30" />
   </head>
   <body>
     <div class="scanlines" aria-hidden="true"></div>
@@ -99,6 +99,10 @@
           <div class="reward-heading"><span>승리 보상</span><strong>새 보상 3개 중 1개 선택</strong><small>다음 전투는 현재 체력과 의욕에 각각 +30만 회복됩니다.</small></div>
           <div id="reward-options" class="reward-options"></div>
         </div>
+        <section id="stage-event-panel" class="stage-event-panel" hidden aria-live="polite">
+          <div class="event-heading"><span>전투 이벤트</span><strong id="stage-event-title">낯선 갈림길</strong><small id="stage-event-copy">다음 전투를 앞두고 선택의 시간이 찾아왔습니다.</small></div>
+          <div id="stage-event-options" class="stage-event-options"></div>
+        </section>
         <button id="next-battle" class="button button-primary" data-action="go-select">다음 전투 <span>↗</span></button>
       </section>
     </main>
@@ -111,7 +115,8 @@
     <script src="js/gen4.js?v=3"></script>
     <script src="js/title-fixes.js?v=3"></script>
     <script src="js/score.js?v=2"></script>
-    <script src="js/rewards.js?v=8"></script>
+    <script src="js/rewards.js?v=10"></script>
+    <script src="js/game-systems.js?v=2"></script>
     <script src="js/ranking-firebase.js?v=3"></script>
   </body>
 </html>

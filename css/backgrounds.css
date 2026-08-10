@@ -354,10 +354,23 @@
 .reward-card small { display:block; margin-top:6px; color:var(--muted); font-size:11px; line-height:1.4; }
 .reward-card.attack { background:linear-gradient(145deg,rgba(255,105,94,.22),transparent 55%),#2a2025; }
 .reward-card.upgrade { background:linear-gradient(145deg,rgba(208,154,255,.2),transparent 55%),#292039; }
+.reward-card.card-upgrade { background:linear-gradient(145deg,rgba(255,189,98,.25),transparent 55%),#332a20; }
 .reward-panel + .button { margin-top:18px; }
+.stage-event-panel { width:min(100%,760px); margin:22px auto 0; padding:18px; border:1px solid rgba(101,229,226,.45); background:linear-gradient(145deg,rgba(101,229,226,.12),transparent 55%),rgba(18,28,37,.94); text-align:left; }
+.event-heading span,.event-heading strong,.event-heading small { display:block; }
+.event-heading span { color:var(--cyan); font-size:11px; letter-spacing:.14em; }
+.event-heading strong { margin-top:6px; color:var(--ink); font:800 24px/1 var(--display); }
+.event-heading small { margin-top:7px; color:var(--muted); font-size:11px; }
+.stage-event-options { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:15px; }
+.stage-event-option { min-height:134px; padding:13px; border:1px solid var(--line); background:#17262f; color:var(--ink); text-align:left; cursor:pointer; transition:transform .15s,border-color .15s; }
+.stage-event-option:hover { transform:translateY(-3px); border-color:var(--cyan); }
+.stage-event-option b { display:block; color:var(--cyan); font:800 17px/1 var(--display); }
+.stage-event-option span { display:block; margin-top:8px; color:var(--muted); font-size:11px; line-height:1.45; }
+.passive-skill { display:block; margin-top:8px; padding-top:7px; border-top:1px solid rgba(237,243,242,.14); color:var(--cyan); font-size:11px; line-height:1.35; }
+.passive-skill b { color:var(--lime); }
 @media (max-width:700px) {
   .evolution-label { font-size:11px; }
   .pokemon-card { min-height:225px; }
   .roster-art-pair { gap:2px; transform:scale(.9); transform-origin:left center; }
 }
-@media (max-width:700px) { .reward-options { grid-template-columns:1fr; } .reward-heading strong { font-size:20px; } }
+@media (max-width:700px) { .reward-options,.stage-event-options { grid-template-columns:1fr; } .reward-heading strong,.event-heading strong { font-size:20px; } }
