@@ -5,7 +5,8 @@
     attack: 'attack.ogg', hit: 'hit.ogg', guard: 'guard.ogg', energy: 'energy.ogg',
     evolution: 'evolution.ogg', hazard: 'hazard.ogg'
   };
-  const bgm = new Audio(`${AUDIO_ROOT}battle-theme.ogg`);
+  const bgm = new Audio(`${AUDIO_ROOT}battle-theme.mp3`);
+  bgm.preload = 'metadata';
   bgm.loop = true;
   bgm.volume = 0.2;
   let enabled = localStorage.getItem('pokemon-g-audio') !== 'off';
