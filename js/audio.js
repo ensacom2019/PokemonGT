@@ -48,6 +48,16 @@
   }
 
   document.addEventListener('pointerdown', startBgm, { passive: true });
+
+  const originalShowScreen = window.showScreen;
+  window.showScreen = (name, ...args) => {
+    if (name === 'start') {
+      bgm.pause();
+      bgm.currentTime = 0;
+    }
+    return originalShowScreen?.(name, ...args);
+  };
+
   document.addEventListener('click', (event) => {
     const target = event.target.closest('button, .pokemon-card');
     if (!target || target.id === 'sound-toggle') return;
