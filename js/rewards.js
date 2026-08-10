@@ -195,8 +195,8 @@
     const maxHp = fighter.maxHp || state.playerMaxHp || 100;
     const maxEnergy = fighter.maxEnergy || state.playerMaxEnergy || 100;
     state.pendingRecovery = {
-      hp: clamp(fighter.hp + 30, 0, maxHp),
-      energy: clamp(fighter.energy + 30, 0, maxEnergy),
+      hp: clamp(fighter.hp + 40, 0, maxHp),
+      energy: clamp(fighter.energy + 40, 0, maxEnergy),
       maxHp,
       maxEnergy
     };
