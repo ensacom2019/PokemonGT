@@ -269,11 +269,11 @@
     const enemy = state.cpu;
     if (!enemy) return;
     const level = Math.max(0, (state.stage || 1) - 1);
-    const attackScale = 1 + level * 0.08;
+    const attackScale = 1 + Math.min(level * 0.04, 0.36);
     enemy.stage = state.stage || 1;
-    enemy.maxHp = 100 + level * 12;
+    enemy.maxHp = 100 + level * 7;
     enemy.hp = enemy.maxHp;
-    enemy.maxEnergy = 100 + level * 8;
+    enemy.maxEnergy = 100 + level * 4;
     enemy.energy = enemy.maxEnergy;
     enemy.attacks = (enemy.attacks || []).map((card) => {
       const baseDamage = Number.isFinite(card.stageBaseDamage) ? card.stageBaseDamage : card.damage;
