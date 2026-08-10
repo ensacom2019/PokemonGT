@@ -20,6 +20,7 @@
   state.rewardOffers = [];
   state.rewardSelected = null;
   state.stage = state.stage || 1;
+  state.highestStage = state.highestStage || state.stage || 1;
   state.pendingStageAdvance = false;
   state.stageRewardHistory = state.stageRewardHistory || [];
 
@@ -135,6 +136,7 @@
     state.rewardOffers = [];
     state.rewardSelected = null;
     state.stage = 1;
+    state.highestStage = 1;
     state.pendingStageAdvance = false;
     state.stageRewardHistory = [];
     state.resultWinnerSide = null;
@@ -228,7 +230,6 @@
     hideReward();
     if (winner?.side !== 'player') {
       state.pendingStageAdvance = false;
-      state.stage = 1;
       if (nextButton) {
         nextButton.disabled = false;
         nextButton.innerHTML = '\uB2E4\uC2DC \uC2DC\uC791 <span>↻</span>';
@@ -262,6 +263,7 @@
   const advanceStage = () => {
     if (!state.pendingStageAdvance) return;
     state.stage = (state.stage || 1) + 1;
+    state.highestStage = Math.max(state.highestStage || 1, state.stage);
     state.pendingStageAdvance = false;
   };
 

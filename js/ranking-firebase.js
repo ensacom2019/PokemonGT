@@ -98,7 +98,7 @@
     if (!currentUser) { setSubmitStatus('Google 로그인이 필요합니다.', 'error'); return; }
     if (nickname.length < 2) { setSubmitStatus('닉네임은 2~16자로 입력하세요.', 'error'); nicknameInput.focus(); return; }
     const partner = state.player?.name || pokemonById(state.selected)?.name || '파트너 없음';
-    const stage = Math.max(1, Number(state.stage) || 1);
+    const stage = Math.max(1, Number(state.highestStage || state.stage) || 1);
     const score = Math.max(0, Math.floor(Number(state.score) || 0));
     saveButton.disabled = true;
     setSubmitStatus('기록을 저장하는 중입니다.');
