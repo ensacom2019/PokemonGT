@@ -418,7 +418,10 @@ function attackPatternContains(fighter,target,card) {
 function resolveAction(fighter, card) {
   if(fighter.hp<=0)return;
   applyHazard(fighter);
-  if(fighter.hp<=0)return;
+  if(fighter.hp<=0){
+    finishBattle(opponentOf(fighter));
+    return;
+  }
   fighter.guarding=false;
   if(fighter.energy<card.energy){writeLog(`${fighter.name}의 ${card.name} 실패 — 의욕이 부족합니다.`);return;}
   fighter.energy=clamp(fighter.energy-card.energy,0,100);
