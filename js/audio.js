@@ -23,6 +23,12 @@
     bgm.play().catch(() => {});
   };
 
+  const restartBgm = () => {
+    bgm.pause();
+    bgm.currentTime = 0;
+    startBgm();
+  };
+
   const renderToggle = () => {
     const button = document.querySelector('#sound-toggle');
     if (!button) return;
@@ -52,11 +58,12 @@
   const originalShowScreen = window.showScreen;
   window.showScreen = (name, ...args) => {
     if (name === 'start') {
-      bgm.pause();
-      bgm.currentTime = 0;
+      restartBgm();
     }
     return originalShowScreen?.(name, ...args);
   };
+
+  document.querySelector('.brand')?.addEventListener('click', restartBgm);
 
   document.addEventListener('click', (event) => {
     const target = event.target.closest('button, .pokemon-card');
