@@ -31,6 +31,18 @@
     return result;
   };
 
+  const renderHudOriginal = window.renderHud;
+  window.renderHud = (fighter, selector) => {
+    const result = renderHudOriginal?.(fighter, selector);
+    const hud = document.querySelector(selector);
+    const info = hud?.querySelector('.fighter-main > div:last-child');
+    const passive = passiveOf(fighter);
+    if (!info || !passive) return result;
+    info.querySelector('.fighter-passive')?.remove();
+    info.insertAdjacentHTML('beforeend', `<span class="fighter-passive"><b>특성 · ${passive.name}</b><span>${passive.description}</span></span>`);
+    return result;
+  };
+
   const resolveActionOriginal = window.resolveAction;
   window.resolveAction = (fighter, card) => {
     const passive = passiveOf(fighter);

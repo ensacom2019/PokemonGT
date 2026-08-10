@@ -368,9 +368,14 @@
 .stage-event-option span { display:block; margin-top:8px; color:var(--muted); font-size:11px; line-height:1.45; }
 .passive-skill { display:block; margin-top:8px; padding-top:7px; border-top:1px solid rgba(237,243,242,.14); color:var(--cyan); font-size:11px; line-height:1.35; }
 .passive-skill b { color:var(--lime); }
+.fighter-passive { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 7px; margin-top:7px; color:var(--cyan); font-size:11px; line-height:1.35; }
+.fighter-passive b { color:var(--lime); white-space:nowrap; }
+.fighter-passive span { color:#b8cecc; }
+.cpu-hud .fighter-passive { justify-content:flex-end; }
 @media (max-width:700px) {
   .evolution-label { font-size:11px; }
   .pokemon-card { min-height:225px; }
   .roster-art-pair { gap:2px; transform:scale(.9); transform-origin:left center; }
+  .fighter-passive { gap:2px 5px; margin-top:5px; }
 }
 @media (max-width:700px) { .reward-options,.stage-event-options { grid-template-columns:1fr; } .reward-heading strong,.event-heading strong { font-size:20px; } }
