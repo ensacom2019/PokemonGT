@@ -272,7 +272,8 @@
     rewardOptions.innerHTML = state.rewardOffers.map((card) => {
       const role = card.kind === 'attack' ? '\uACF5\uACA9' : card.kind === 'move' ? '\uC774\uB3D9' : card.kind === 'card-upgrade' ? '\uCE74\uB4DC \uAC15\uD654' : '\uC2A4\uD0EF \uAC15\uD654';
       const stat = card.kind === 'attack' ? `\uD53C\uD574 ${card.damage} · \uC758\uC695 ${card.energy} · \uC0AC\uAC70\uB9AC ${card.range} · \uC6B0\uC120 ${card.priority}` : card.ko;
-      return `<button type="button" class="reward-card ${card.kind}" data-reward="${card.id}"><span class="card-badge">${role}</span><span class="card-icon">${card.icon}</span><strong>${card.name}</strong><small>${stat}</small></button>`;
+      const range = ['attack', 'move'].includes(card.kind) ? `<span class="reward-mini-range card-mini-range ${card.kind}" aria-label="3×3 기술 범위 표시">${miniRangeCells(card)}</span>` : '';
+      return `<button type="button" class="reward-card ${card.kind}" data-reward="${card.id}"><span class="card-badge">${role}</span><span class="card-icon">${card.icon}</span><strong>${card.name}</strong><div class="reward-card-footer"><small>${stat}</small>${range}</div></button>`;
     }).join('');
     rewardOptions.querySelectorAll('[data-reward]').forEach((button) => button.addEventListener('click', () => selectReward(button.dataset.reward)));
     rewardPanel.hidden = false;

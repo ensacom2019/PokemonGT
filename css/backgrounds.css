@@ -351,7 +351,9 @@
 .reward-card .card-badge { display:inline-block; padding:4px 6px; color:#10141f; background:var(--amber); font-size:11px; }
 .reward-card .card-icon { margin-top:12px; font-size:28px; }
 .reward-card strong { display:block; margin-top:7px; font:800 17px/1 var(--display); }
-.reward-card small { display:block; margin-top:6px; color:var(--muted); font-size:11px; line-height:1.4; }
+.reward-card-footer { position:absolute; right:12px; bottom:11px; left:12px; display:flex; align-items:end; justify-content:space-between; gap:8px; }
+.reward-card small { display:block; margin:0; color:var(--muted); font-size:11px; line-height:1.4; }
+.reward-mini-range { flex:0 0 auto; }
 .reward-card.attack { background:linear-gradient(145deg,rgba(255,105,94,.22),transparent 55%),#2a2025; }
 .reward-card.upgrade { background:linear-gradient(145deg,rgba(208,154,255,.2),transparent 55%),#292039; }
 .reward-card.card-upgrade { background:linear-gradient(145deg,rgba(255,189,98,.25),transparent 55%),#332a20; }
