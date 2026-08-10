@@ -355,6 +355,9 @@
 .reward-card.attack { background:linear-gradient(145deg,rgba(255,105,94,.22),transparent 55%),#2a2025; }
 .reward-card.upgrade { background:linear-gradient(145deg,rgba(208,154,255,.2),transparent 55%),#292039; }
 .reward-card.card-upgrade { background:linear-gradient(145deg,rgba(255,189,98,.25),transparent 55%),#332a20; }
+.enemy-reward-list { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 2px; padding:9px; border:1px solid rgba(255,189,98,.32); background:rgba(255,189,98,.07); }
+.enemy-reward-title { flex:1 0 100%; color:var(--amber); font-size:11px; letter-spacing:.08em; }
+.enemy-reward { padding:4px 6px; border:1px solid rgba(255,189,98,.35); color:#ffe3ae; background:rgba(55,40,23,.72); font-size:11px; line-height:1.2; }
 .reward-panel + .button { margin-top:18px; }
 .stage-event-panel { width:min(100%,760px); margin:22px auto 0; padding:18px; border:1px solid rgba(101,229,226,.45); background:linear-gradient(145deg,rgba(101,229,226,.12),transparent 55%),rgba(18,28,37,.94); text-align:left; }
 .event-heading span,.event-heading strong,.event-heading small { display:block; }
@@ -377,5 +380,6 @@
   .pokemon-card { min-height:225px; }
   .roster-art-pair { gap:2px; transform:scale(.9); transform-origin:left center; }
   .fighter-passive { gap:2px 5px; margin-top:5px; }
+  .enemy-reward-list { margin-top:8px; }
 }
 @media (max-width:700px) { .reward-options,.stage-event-options { grid-template-columns:1fr; } .reward-heading strong,.event-heading strong { font-size:20px; } }

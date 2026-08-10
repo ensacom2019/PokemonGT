@@ -45,11 +45,12 @@
   window.enhancedCard = enhancedCard;
 
   const cardByIdOriginal = window.cardById;
-  window.cardById = (id) => enhancedCard(state.playerBonusCards.find((card) => card.id === id) || cardByIdOriginal?.(id));
+  window.cardById = (id) => enhancedCard(state.playerBonusCards.find((card) => card.id === id) || state.cpu?.bonusCards?.find((card) => card.id === id) || cardByIdOriginal?.(id));
 
   const getHandOriginal = window.getHand;
   window.getHand = (fighter) => {
     const base = getHandOriginal?.(fighter) || [];
+    if (fighter?.side === 'cpu') return [...base, ...(fighter.bonusCards || [])];
     if (fighter?.side !== 'player') return base;
     return [...base, ...state.playerBonusCards].map(enhancedCard);
   };
@@ -111,6 +112,59 @@
   const rewardPanel = document.querySelector('#reward-panel');
   const rewardOptions = document.querySelector('#reward-options');
   const nextButton = document.querySelector('#next-battle');
+  const enemyRewardList = document.querySelector('#enemy-reward-list');
+
+  const enemyRewardCount = (stage) => Math.floor(Math.max(0, (stage || 1) - 1) / 3);
+  const enemyRewardTemplates = () => [
+    { id: 'enemy-max-hp', name: '체력 강화', description: '최대 체력 +10', kind: 'stat', stat: 'maxHp', amount: 10 },
+    { id: 'enemy-max-energy', name: '의욕 강화', description: '최대 의욕 +10', kind: 'stat', stat: 'maxEnergy', amount: 10 },
+    { id: 'enemy-tech-up', name: '기술 강화', description: '공격 카드 하나 강화', kind: 'tech' },
+    ...REWARD_POOL.filter((card) => card.kind === 'move' || card.kind === 'attack').map((card) => ({
+      id: `enemy-${card.id}`,
+      name: card.kind === 'attack' ? `신규 기술 · ${card.name}` : `기동 카드 · ${card.name}`,
+      description: card.kind === 'attack' ? `피해 ${card.damage} · 의욕 ${card.energy}` : card.ko,
+      kind: 'card',
+      card: { ...card, id: `enemy-${card.id}` }
+    }))
+  ];
+  const applyEnemyRewards = (enemy, stage) => {
+    const count = enemyRewardCount(stage);
+    enemy.bonusCards = [];
+    enemy.rewards = shuffle(enemyRewardTemplates()).slice(0, count);
+    enemy.rewards.forEach((reward) => {
+      if (reward.kind === 'stat') {
+        enemy[reward.stat] = (enemy[reward.stat] || 100) + reward.amount;
+        if (reward.stat === 'maxHp') enemy.hp = Math.min(enemy.maxHp, enemy.hp + reward.amount);
+        if (reward.stat === 'maxEnergy') enemy.energy = Math.min(enemy.maxEnergy, enemy.energy + reward.amount);
+      }
+      if (reward.kind === 'tech' && enemy.attacks?.length) {
+        const index = Math.floor(Math.random() * enemy.attacks.length);
+        const target = enemy.attacks[index];
+        enemy.attacks[index] = {
+          ...target,
+          name: `${target.name} +`, label: `${target.label || target.name} +`,
+          damage: (target.damage || 0) + 5,
+          energy: Math.max(0, (target.energy || 0) - 1)
+        };
+        reward.description = `${target.name} 피해 +5 · 의욕 -1`;
+      }
+      if (reward.kind === 'card') enemy.bonusCards.push({ ...reward.card });
+    });
+  };
+  const renderEnemyRewards = () => {
+    if (!enemyRewardList) return;
+    const rewards = state.cpu?.rewards || [];
+    enemyRewardList.hidden = !rewards.length;
+    enemyRewardList.innerHTML = rewards.length
+      ? `<span class="enemy-reward-title">적 보상 ${rewards.length}개</span>${rewards.map((reward) => `<span class="enemy-reward" title="${reward.description}">${reward.name}</span>`).join('')}`
+      : '';
+  };
+  const renderCpuQueueOriginal = window.renderCpuQueue;
+  window.renderCpuQueue = () => {
+    const result = renderCpuQueueOriginal?.();
+    renderEnemyRewards();
+    return result;
+  };
 
   const hideReward = () => {
     if (rewardPanel) rewardPanel.hidden = true;
@@ -281,7 +335,9 @@
       const baseDamage = Number.isFinite(card.stageBaseDamage) ? card.stageBaseDamage : card.damage;
       return Number.isFinite(baseDamage) ? { ...card, stageBaseDamage: baseDamage, damage: Math.round(baseDamage * attackScale) } : card;
     });
+    applyEnemyRewards(enemy, enemy.stage);
     updateStage();
+    renderBattle();
   };
 
   const startNextBattleOriginal = window.startNextBattle;

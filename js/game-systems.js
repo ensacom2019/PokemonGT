@@ -71,8 +71,16 @@
   };
 
   const PERSONALITIES = ['aggressive', 'cautious', 'skirmisher', 'tactician'];
+  const MOVEMENT_PROFILES = {
+    bulbasaur: 'sentinel', charmander: 'rusher', squirtle: 'kiter',
+    chikorita: 'sentinel', cyndaquil: 'rusher', totodile: 'rusher',
+    treecko: 'flanker', torchic: 'flanker', mudkip: 'sentinel',
+    turtwig: 'sentinel', chimchar: 'flanker', piplup: 'kiter'
+  };
   const assignPersonality = () => {
-    if (state.cpu) state.cpu.aiPersonality = PERSONALITIES[Math.floor(Math.random() * PERSONALITIES.length)];
+    if (!state.cpu) return;
+    state.cpu.aiPersonality = PERSONALITIES[Math.floor(Math.random() * PERSONALITIES.length)];
+    state.cpu.movementProfile = MOVEMENT_PROFILES[state.cpu.baseId || state.cpu.id] || 'balanced';
   };
   const startBattleOriginal = window.startBattle;
   window.startBattle = (...args) => { const result = startBattleOriginal?.(...args); assignPersonality(); return result; };
@@ -168,12 +176,12 @@
     eventPanel.hidden = false;
   };
   nextButton?.addEventListener('click', (event) => {
-    const nextStage = (state.stage || 1) + 1;
-    if (state.resultWinnerSide !== 'player' || !state.pendingStageAdvance || !state.rewardSelected || nextStage % 3 !== 0 || state.eventResolvedStage === nextStage) return;
+    const clearedStage = state.stage || 1;
+    if (state.resultWinnerSide !== 'player' || !state.pendingStageAdvance || !state.rewardSelected || clearedStage % 3 !== 0 || state.eventResolvedStage === clearedStage) return;
     event.preventDefault();
     event.stopImmediatePropagation();
-    state.eventResolvedStage = nextStage;
-    showStageEvent(nextStage);
+    state.eventResolvedStage = clearedStage;
+    showStageEvent(clearedStage);
   }, true);
 
   window.renderRoster();

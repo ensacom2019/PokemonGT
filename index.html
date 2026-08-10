@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#10141f" />
     <title>포켓몬 // 그리드 배틀</title>
     <link rel="stylesheet" href="css/styles.css?v=5" />
-    <link rel="stylesheet" href="css/backgrounds.css?v=31" />
+    <link rel="stylesheet" href="css/backgrounds.css?v=32" />
   </head>
   <body>
     <div class="scanlines" aria-hidden="true"></div>
@@ -71,6 +71,7 @@
 
           <aside class="battle-side right-side">
             <div class="side-label"><span class="cpu-dot"></span> 상대 작전</div>
+            <div id="enemy-reward-list" class="enemy-reward-list" hidden></div>
             <div id="cpu-queue" class="cpu-queue"></div>
             <div class="priority-panel"><div class="queue-heading"><span>행동 순서</span><small>우선순위 실시간</small></div><div id="priority-list" class="priority-list"><span class="empty-message">진행 버튼을 눌러<br />턴 순서를 확인하세요.</span></div></div>
             <button id="advance-round" class="button button-primary advance-button" disabled>턴 실행 <span>→</span></button>
@@ -110,13 +111,13 @@
     <div id="toast" class="toast" aria-live="polite"></div>
     <script src="js/game.js?v=17"></script>
     <script src="js/ui-fixes.js?v=13"></script>
-    <script src="js/evolution.js?v=12"></script>
+    <script src="js/evolution.js?v=13"></script>
     <script src="js/gen3.js?v=4"></script>
     <script src="js/gen4.js?v=3"></script>
     <script src="js/title-fixes.js?v=3"></script>
     <script src="js/score.js?v=2"></script>
-    <script src="js/rewards.js?v=13"></script>
-    <script src="js/game-systems.js?v=3"></script>
+    <script src="js/rewards.js?v=14"></script>
+    <script src="js/game-systems.js?v=4"></script>
     <script src="js/ranking-firebase.js?v=4"></script>
   </body>
 </html>

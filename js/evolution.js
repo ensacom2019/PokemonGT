@@ -258,6 +258,15 @@
     const before = distanceBetween(position, target);
     const after = distanceBetween({ x: nx, y: ny }, target);
     let score = (before - after) * 100;
+    const profile = fighter.movementProfile || 'balanced';
+    const isForward = fighter.side === 'player' ? delta.dx > 0 : delta.dx < 0;
+    const isBackward = fighter.side === 'player' ? delta.dx < 0 : delta.dx > 0;
+    const isLateral = delta.dx === 0 && delta.dy !== 0;
+    const underPressure = before <= 3 || position.hp <= (fighter.maxHp || 100) * 0.45;
+    if (profile === 'rusher') score += isForward ? 85 : isLateral ? -35 : -70;
+    if (profile === 'flanker') score += isLateral ? 150 : isForward ? 20 : -25;
+    if (profile === 'kiter') score += underPressure ? (isBackward ? 210 : isLateral ? 105 : -130) : (isLateral ? 75 : isForward ? 25 : 20);
+    if (profile === 'sentinel') score += isLateral ? 95 : underPressure && isBackward ? 120 : isForward ? 15 : 5;
     if (hazardAt(nx, ny)) score -= 280;
     if (hazardAt(position.x, position.y)) score += 180;
     if (card.id === BACKSTEP_ID) score += before <= 1 ? 210 : -120;
