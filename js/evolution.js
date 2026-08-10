@@ -37,7 +37,7 @@
   };
 
   const EVOLUTION_CARD = { id: EVOLUTION_CARD_ID, name: '\uC9C4\uD654', ko: '\uC9C4\uD654\uD558\uC5EC \uAC15\uD654', icon: '\u2726', kind: 'evolution', priority: 7, energy: 0, label: '\uC9C4\uD654' };
-  const BACKSTEP_CARD = { id: BACKSTEP_CARD_ID, name: '\uB4A4\uB85C 2\uCE78', ko: '\uB4A4\uB85C \uB450 \uCE78 \uC774\uB3D9', icon: '\u21C7', kind: 'move', priority: 3, energy: 0, label: '\uB4A4\uB85C 2\uCE78', dx: -2, dy: 0, relative: 'back' };
+  const BACKSTEP_CARD = { id: BACKSTEP_CARD_ID, name: '\uB4A4\uB85C 2\uCE78', ko: '\uB4A4\uB85C \uB450 \uCE78 \uC774\uB3D9 · \uC758\uC695 6', icon: '\u21C7', kind: 'move', priority: 3, energy: 6, label: '\uB4A4\uB85C 2\uCE78', dx: -2, dy: 0, relative: 'back' };
 
   if (!CARDS.some((card) => card.id === BACKSTEP_CARD_ID)) CARDS.push(BACKSTEP_CARD);
   if (!CARDS.some((card) => card.id === EVOLUTION_CARD_ID)) CARDS.push(EVOLUTION_CARD);

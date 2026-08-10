@@ -1,8 +1,8 @@
 (() => {
   const REWARD_POOL = [
-    { id: 'front2', name: '\uC55E 2\uCE78', ko: '\uC815\uBA74\uC73C\uB85C \uB450 \uCE78 \uC774\uB3D9', icon: '\u21E5', kind: 'move', priority: 3, energy: 0, label: '\uC55E 2\uCE78', dx: 2, dy: 0, relative: 'front' },
-    { id: 'up2', name: '\uC704 2\uCE78', ko: '\uC704\uB85C \uB450 \uCE78 \uC774\uB3D9', icon: '\u21C8', kind: 'move', priority: 3, energy: 0, label: '\uC704 2\uCE78', dx: 0, dy: -2 },
-    { id: 'down2', name: '\uC544\uB798 2\uCE78', ko: '\uC544\uB798\uB85C \uB450 \uCE78 \uC774\uB3D9', icon: '\u21CA', kind: 'move', priority: 3, energy: 0, label: '\uC544\uB798 2\uCE78', dx: 0, dy: 2 },
+    { id: 'front2', name: '\uC55E 2\uCE78', ko: '\uC815\uBA74\uC73C\uB85C \uB450 \uCE78 \uC774\uB3D9 · \uC758\uC695 6', icon: '\u21E5', kind: 'move', priority: 3, energy: 6, label: '\uC55E 2\uCE78', dx: 2, dy: 0, relative: 'front' },
+    { id: 'up2', name: '\uC704 2\uCE78', ko: '\uC704\uB85C \uB450 \uCE78 \uC774\uB3D9 · \uC758\uC695 6', icon: '\u21C8', kind: 'move', priority: 3, energy: 6, label: '\uC704 2\uCE78', dx: 0, dy: -2 },
+    { id: 'down2', name: '\uC544\uB798 2\uCE78', ko: '\uC544\uB798\uB85C \uB450 \uCE78 \uC774\uB3D9 · \uC758\uC695 6', icon: '\u21CA', kind: 'move', priority: 3, energy: 6, label: '\uC544\uB798 2\uCE78', dx: 0, dy: 2 },
     { id: 'diag-front-up', name: '\uB300\uAC01\uC120 \uC704', ko: '\uC815\uBA74 \uC704\uB85C \uB300\uAC01\uC120 \uC774\uB3D9', icon: '\u2197', kind: 'move', priority: 3, energy: 0, label: '\uB300\uAC01\uC120 \uC704', dx: 1, dy: -1, relative: 'front-diagonal' },
     { id: 'diag-front-down', name: '\uB300\uAC01\uC120 \uC544\uB798', ko: '\uC815\uBA74 \uC544\uB798\uB85C \uB300\uAC01\uC120 \uC774\uB3D9', icon: '\u2198', kind: 'move', priority: 3, energy: 0, label: '\uB300\uAC01\uC120 \uC544\uB798', dx: 1, dy: 1, relative: 'front-diagonal' },
     { id: 'max-hp-10', name: '\uCCB4\uB825 \uAC15\uD654', ko: '\uCD5C\uB300 \uCCB4\uB825 +10', icon: '\u2665', kind: 'upgrade', priority: 6, energy: 0, label: '\uCCB4\uB825 +10', upgrade: 'maxHp', amount: 10 },
