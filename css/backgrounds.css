@@ -345,14 +345,14 @@
 .reward-heading strong { margin-top:6px; color:var(--ink); font:800 24px/1 var(--display); }
 .reward-heading small { margin-top:7px; color:var(--muted); font-size:11px; }
 .reward-options { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:15px; }
-.reward-card { position:relative; min-height:142px; padding:13px; border:1px solid var(--line); background:#17262f; color:var(--ink); text-align:left; cursor:pointer; transition:transform .15s,border-color .15s,box-shadow .15s; }
+.reward-card { display:flex; position:relative; flex-direction:column; min-height:156px; padding:13px; border:1px solid var(--line); background:#17262f; color:var(--ink); text-align:left; cursor:pointer; transition:transform .15s,border-color .15s,box-shadow .15s; }
 .reward-card:hover { transform:translateY(-3px); border-color:var(--amber); }
 .reward-card.selected { border-color:var(--lime); box-shadow:inset 0 0 0 2px var(--lime),0 0 18px rgba(200,242,85,.22); }
 .reward-card .card-badge { display:inline-block; padding:4px 6px; color:#10141f; background:var(--amber); font-size:11px; }
 .reward-card .card-icon { margin-top:12px; font-size:28px; }
-.reward-card strong { display:block; margin-top:7px; font:800 17px/1 var(--display); }
-.reward-card-footer { position:absolute; right:12px; bottom:11px; left:12px; display:flex; align-items:end; justify-content:space-between; gap:8px; }
-.reward-card small { display:block; margin:0; color:var(--muted); font-size:11px; line-height:1.4; }
+.reward-card strong { display:block; min-height:20px; margin-top:7px; font:800 17px/1.2 var(--display); word-break:keep-all; }
+.reward-card-footer { display:flex; min-height:34px; margin-top:auto; padding-top:10px; align-items:end; justify-content:space-between; gap:8px; }
+.reward-card small { display:block; flex:1 1 auto; min-width:0; margin:0; color:var(--muted); font-size:11px; line-height:1.4; word-break:keep-all; }
 .reward-mini-range { flex:0 0 auto; }
 .reward-card.attack { background:linear-gradient(145deg,rgba(255,105,94,.22),transparent 55%),#2a2025; }
 .reward-card.upgrade { background:linear-gradient(145deg,rgba(208,154,255,.2),transparent 55%),#292039; }
