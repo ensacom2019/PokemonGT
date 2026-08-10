@@ -5,7 +5,6 @@
 ## 플레이
 
 - 웹 게임: https://ensacom2019.github.io/PokemonGT/
-- 로컬 실행: 프로젝트 폴더에서 `python -m http.server 5500`을 실행한 뒤 `http://localhost:5500/`으로 접속합니다.
 
 ## 게임 목표
 
