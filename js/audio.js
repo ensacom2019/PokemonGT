@@ -1,7 +1,7 @@
 (() => {
   const AUDIO_ROOT = 'assets/audio/';
   const SFX = {
-    select: 'card-select.ogg', confirm: 'confirm.ogg', move: 'move.ogg',
+    select: 'card-select.ogg', confirm: 'confirm.ogg',
     attack: 'attack.ogg', hit: 'hit.ogg', guard: 'guard.ogg', energy: 'energy.ogg',
     evolution: 'evolution.ogg', hazard: 'hazard.ogg'
   };
@@ -59,14 +59,13 @@
   window.resolveAction = (fighter, card) => {
     if (!fighter || !card) return originalResolveAction?.(fighter, card);
     const target = opponentOf(fighter);
-    const before = { hp: fighter.hp, targetHp: target?.hp, energy: fighter.energy, x: fighter.x, y: fighter.y };
+    const before = { hp: fighter.hp, targetHp: target?.hp, energy: fighter.energy };
     const result = originalResolveAction?.(fighter, card);
     if (fighter.hp < before.hp) play('hazard', 0.48);
     if (card.kind === 'attack') {
       if (target?.hp < before.targetHp) { play('attack', 0.48); setTimeout(() => play('hit', 0.4), 130); }
       else play('hazard', 0.24);
-    } else if (card.kind === 'move' && (fighter.x !== before.x || fighter.y !== before.y)) play('move', 0.36);
-    else if (card.kind === 'guard' && fighter.guarding) play('guard', 0.42);
+    } else if (card.kind === 'guard' && fighter.guarding) play('guard', 0.42);
     else if (card.kind === 'energy' && fighter.energy > before.energy) play('energy', 0.42);
     else if (card.kind === 'evolution' && fighter.evolved) play('evolution', 0.52);
     return result;
