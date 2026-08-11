@@ -113,16 +113,27 @@
     const base = chooseCpuQueueOriginal?.() || [];
     if (!cpu || !player) return base;
     const cards = getHand(cpu) || [];
+    const preventMoveOnlyQueue = (queue) => {
+      const result = queue.filter(Boolean).slice(0, 3);
+      const moveCount = result.reduce((count, id) => count + (cards.find((card) => card.id === id)?.kind === 'move' ? 1 : 0), 0);
+      if (result.length !== 3 || moveCount < 3) return result;
+      const replacement = cards.find((card) => card.kind === 'attack' && card.energy <= cpu.energy && attackPatternContains(cpu, player, card))
+        || cards.find((card) => card.kind === 'guard' && card.energy <= cpu.energy)
+        || cards.find((card) => card.kind === 'energy' && card.energy <= cpu.energy)
+        || cards.find((card) => card.kind !== 'move' && card.energy <= cpu.energy);
+      if (replacement) result[2] = replacement.id;
+      return result;
+    };
     const affordable = cards.filter((card) => card.energy <= cpu.energy);
     const attacks = affordable.filter((card) => card.kind === 'attack' && attackPatternContains(cpu, player, card)).sort((a, b) => b.damage - a.damage || b.priority - a.priority);
     const guard = affordable.find((card) => card.kind === 'guard');
     const energy = affordable.find((card) => card.kind === 'energy');
     const move = affordable.find((card) => card.kind === 'move' && card.id === 'back2') || affordable.find((card) => card.kind === 'move');
     const fill = (seed) => [...seed, ...base, ...attacks.map((card) => card.id)].filter(Boolean).slice(0, 3);
-    if (cpu.aiPersonality === 'aggressive' && player.hp <= Math.max(55, cpu.hp)) return fill([attacks[0]?.id, attacks[0]?.id, attacks[1]?.id]);
-    if (cpu.aiPersonality === 'cautious' && cpu.hp <= (cpu.maxHp || 100) * 0.5) return fill([guard?.id, energy?.id, attacks[0]?.id]);
-    if (cpu.aiPersonality === 'skirmisher' && Math.abs(cpu.x - player.x) + Math.abs(cpu.y - player.y) <= 1) return fill([move?.id, attacks[0]?.id]);
-    return base;
+    if (cpu.aiPersonality === 'aggressive' && player.hp <= Math.max(55, cpu.hp)) return preventMoveOnlyQueue(fill([attacks[0]?.id, attacks[0]?.id, attacks[1]?.id]));
+    if (cpu.aiPersonality === 'cautious' && cpu.hp <= (cpu.maxHp || 100) * 0.5) return preventMoveOnlyQueue(fill([guard?.id, energy?.id, attacks[0]?.id]));
+    if (cpu.aiPersonality === 'skirmisher' && Math.abs(cpu.x - player.x) + Math.abs(cpu.y - player.y) <= 1) return preventMoveOnlyQueue(fill([move?.id, attacks[0]?.id]));
+    return preventMoveOnlyQueue(base);
   };
 
   const eventPanel = document.querySelector('#stage-event-panel');

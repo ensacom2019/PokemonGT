@@ -336,13 +336,15 @@
     const selected = [];
     for (let slot = 0; slot < 3; slot += 1) {
       const candidates = cards.filter((card) => card.kind !== 'evolution' || !selected.includes(card.id));
+      const moveCount = selected.reduce((count, id) => count + (cards.find((card) => card.id === id)?.kind === 'move' ? 1 : 0), 0);
       let best = candidates[0];
       let bestScore = -Infinity;
       candidates.forEach((card) => {
         const delta = card.kind === 'move' ? moveFor(fighter, card) : null;
         const openingLateralSetup = delta ? attackSetupScore(fighter, target, cards, position, clamp(position.x + delta.dx, 0, 5), clamp(position.y + delta.dy, 0, 4)) : 0;
         const isOpeningUnplannedLateralMove = state.round === 1 && state.turn === 0 && slot === 0 && delta?.dx === 0 && delta.dy !== 0 && openingLateralSetup === 0;
-        const score = scoreCard(fighter, target, card, position, cards) + (3 - slot) * (card.priority || 0) + (isOpeningUnplannedLateralMove ? -180 : 0);
+        const isThirdMove = card.kind === 'move' && moveCount >= 2;
+        const score = scoreCard(fighter, target, card, position, cards) + (3 - slot) * (card.priority || 0) + (isOpeningUnplannedLateralMove ? -180 : 0) + (isThirdMove ? -10000 : 0);
         if (score > bestScore) { best = card; bestScore = score; }
       });
       if (!best) break;
