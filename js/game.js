@@ -23,6 +23,12 @@ const $ = (selector) => document.querySelector(selector);
 const state = { screen:'start', selected:null, player:null, cpu:null, round:1, turn:0, hazard:new Set(), queue:[], cpuQueue:[], lastFirst:'player', log:[], gameOver:false, executing:false, previewCard:null };
 const screens = { start:$('#screen-start'), select:$('#screen-select'), battle:$('#screen-battle'), result:$('#screen-result') };
 
+function resetBattleActionHistory() {
+  const priority = $('#priority-list');
+  if (priority) priority.innerHTML = '<span class="empty-message">\uCE74\uB4DC \uC120\uD0DD \uD6C4<br />\uD134 \uC21C\uC11C\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4.</span>';
+  window.clearActionPreview?.();
+}
+
 function showScreen(name) { Object.entries(screens).forEach(([key, el]) => { el.hidden = key !== name; el.classList.toggle('active', key === name); }); state.screen = name; window.scrollTo({top:0, behavior:'smooth'}); }
 function formatHp(value) { return Math.max(0, Math.round(value)); }
 function clamp(value,min,max) { return Math.max(min,Math.min(max,value)); }
@@ -47,10 +53,11 @@ function startNextBattle() {
   state.cpu=createFighter(cpu,'cpu',{x:4,y:2});
   state.round=1; state.turn=0; state.hazard=new Set(); state.queue=[]; state.cpuQueue=[];
   state.lastFirst='player'; state.gameOver=false; state.executing=false; state.previewCard=null;
+  resetBattleActionHistory();
   state.mapTheme=['grassland','forest','lake'][Math.floor(Math.random()*3)];
   renderBattle(); showScreen('battle'); writeLog(`${selected.name} 출전! 새로운 상대 ${cpu.name}이(가) 등장했습니다.`);
 }
-function startBattle() { const selected=pokemonById(state.selected); const opponents=POKEMON.filter((pokemon)=>pokemon.id!==selected.id); const cpu=opponents[(POKEMON.findIndex((pokemon)=>pokemon.id===selected.id)+2)%opponents.length]; state.player=createFighter(selected,'player',{x:1,y:2}); state.cpu=createFighter(cpu,'cpu',{x:4,y:2}); state.round=1; state.turn=0; state.hazard=new Set(); state.queue=[]; state.cpuQueue=[]; state.lastFirst='player'; state.gameOver=false; state.executing=false; state.previewCard=null; state.mapTheme=['grassland','forest','lake'][Math.floor(Math.random()*3)]; renderBattle(); showScreen('battle'); writeLog(`${selected.name} 출전! 카드를 고르면 3×3 범위가 표시됩니다.`); }
+function startBattle() { const selected=pokemonById(state.selected); const opponents=POKEMON.filter((pokemon)=>pokemon.id!==selected.id); const cpu=opponents[(POKEMON.findIndex((pokemon)=>pokemon.id===selected.id)+2)%opponents.length]; state.player=createFighter(selected,'player',{x:1,y:2}); state.cpu=createFighter(cpu,'cpu',{x:4,y:2}); state.round=1; state.turn=0; state.hazard=new Set(); state.queue=[]; state.cpuQueue=[]; state.lastFirst='player'; state.gameOver=false; state.executing=false; state.previewCard=null; resetBattleActionHistory(); state.mapTheme=['grassland','forest','lake'][Math.floor(Math.random()*3)]; renderBattle(); showScreen('battle'); writeLog(`${selected.name} 출전! 카드를 고르면 3×3 범위가 표시됩니다.`); }
 function renderHud(fighter, selector) { const el=$(selector); const hp=formatHp(fighter.hp); const en=formatHp(fighter.energy); el.innerHTML=`<div class="fighter-main"><div class="fighter-avatar"><img class="fighter-art" src="${fighter.image}" alt="${fighter.name}" /></div><div><strong class="fighter-name">${fighter.name}</strong><span class="fighter-generation">${fighter.ko} · ${fighter.type}</span></div></div><div class="meter-labels"><span>HP <strong>${hp}/100</strong></span><span>EN <strong>${en}/100</strong></span></div><div class="meter"><i style="width:${hp}%"></i></div><div class="meter energy"><i style="width:${en}%"></i></div>`; }
 function renderBattle() { renderHud(state.player,'#player-hud'); renderHud(state.cpu,'#cpu-hud'); $('#round-number').textContent=String(state.round).padStart(2,'0'); $('#round-state').textContent=state.executing?'EXECUTING':state.queue.length===3?'READY TO EXECUTE':'CARD PHASE'; $('#hazard-count').textContent=`HAZARDS ${String(state.hazard.size).padStart(2,'0')}`; $('#turn-counter').textContent=`TURNS ${String(state.turn).padStart(2,'0')}`; renderGrid(); renderRangeLabel(); renderHand(); renderQueue(); renderCpuQueue(); }
 function renderRangeLabel() { const label=$('#range-label'); const card=cardById(state.previewCard); if(!label)return; if(!card){label.textContent='RANGE PREVIEW: NONE';label.className='';return;} const kind=card.kind==='attack'?'ATTACK':card.kind==='move'?'MOVE':'SELF'; label.textContent=`3×3 ${kind} RANGE / ${card.name}`; label.className=`range-label ${card.kind}`; }
