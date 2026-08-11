@@ -34,5 +34,45 @@ service cloud.firestore {
           && request.resource.data.savedAt is timestamp;
       }
     }
+
+    match /pokemonGTournamentBattleLogs/{logId} {
+      allow create: if request.auth != null && validBattleLog();
+      allow read, update, delete: if false;
+
+      function validBattleLog() {
+        return request.resource.data.keys().hasOnly([
+            'battleId', 'sessionId', 'gameVersion', 'startedAt', 'finishedAt',
+            'stage', 'mapTheme', 'playerPokemon', 'enemyPokemon', 'actions',
+            'result', 'rounds', 'score', 'playerHp', 'playerEnergy', 'enemyHp',
+            'enemyEnergy', 'userId', 'savedAt'
+          ])
+          && request.resource.data.userId == request.auth.uid
+          && request.resource.data.battleId is string
+          && request.resource.data.battleId.size() >= 8
+          && request.resource.data.sessionId is string
+          && request.resource.data.sessionId.size() >= 8
+          && request.resource.data.gameVersion is string
+          && request.resource.data.startedAt is int
+          && request.resource.data.finishedAt is int
+          && request.resource.data.finishedAt >= request.resource.data.startedAt
+          && request.resource.data.stage is int
+          && request.resource.data.stage >= 1
+          && request.resource.data.mapTheme is string
+          && request.resource.data.playerPokemon is string
+          && request.resource.data.enemyPokemon is string
+          && request.resource.data.actions is list
+          && request.resource.data.actions.size() <= 120
+          && request.resource.data.result in ['승리', '패배']
+          && request.resource.data.rounds is int
+          && request.resource.data.rounds >= 1
+          && request.resource.data.score is int
+          && request.resource.data.score >= 0
+          && request.resource.data.playerHp is int
+          && request.resource.data.playerEnergy is int
+          && request.resource.data.enemyHp is int
+          && request.resource.data.enemyEnergy is int
+          && request.resource.data.savedAt is timestamp;
+      }
+    }
   }
 }

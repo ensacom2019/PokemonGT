@@ -8,13 +8,19 @@
     appId: '1:628240153353:web:3c90ea5a55866f9f79b1d8',
   };
   const COLLECTION = 'pokemonGTournamentRankings';
+  const BATTLE_LOG_COLLECTION = 'pokemonGTournamentBattleLogs';
   const MAX_ENTRIES = 10;
   const NICKNAME_KEY = 'pokemon-g-tournament-nickname';
+  const SESSION_KEY = 'pokemon-g-tournament-session-id';
+  const PENDING_LOGS_KEY = 'pokemon-g-tournament-pending-battle-logs';
+  const LOG_VERSION = '1.0.0';
   let auth;
   let db;
   let currentUser = null;
   let firebaseReady = false;
   let firebaseApi = null;
+  let activeBattleLog = null;
+  let flushingBattleLogs = false;
 
   const titleList = document.querySelector('#title-ranking-list');
   const titleState = document.querySelector('#title-ranking-state');
@@ -28,6 +34,112 @@
 
   const formatScore = (value) => String(Math.max(0, Math.floor(Number(value) || 0))).padStart(6, '0');
   const cleanNickname = (value) => String(value || '').trim().replace(/[<>]/g, '').slice(0, 16);
+  const makeId = () => globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  const sessionId = () => {
+    const saved = localStorage.getItem(SESSION_KEY);
+    if (saved) return saved;
+    const id = makeId();
+    localStorage.setItem(SESSION_KEY, id);
+    return id;
+  };
+  const readPendingBattleLogs = () => {
+    try {
+      const value = JSON.parse(localStorage.getItem(PENDING_LOGS_KEY) || '[]');
+      return Array.isArray(value) ? value : [];
+    } catch { return []; }
+  };
+  const storePendingBattleLog = (log) => {
+    const pending = readPendingBattleLogs();
+    pending.push(log);
+    localStorage.setItem(PENDING_LOGS_KEY, JSON.stringify(pending.slice(-10)));
+  };
+  const startBattleLog = () => {
+    if (!state.player || !state.cpu) return;
+    activeBattleLog = {
+      battleId: makeId(),
+      sessionId: sessionId(),
+      gameVersion: LOG_VERSION,
+      startedAt: Date.now(),
+      stage: Math.max(1, Number(state.stage || state.highestStage) || 1),
+      mapTheme: state.mapTheme || 'unknown',
+      playerPokemon: state.player.name,
+      enemyPokemon: state.cpu.name,
+      actions: [],
+      finished: false,
+    };
+  };
+  const recordBattleAction = (fighter, card, before, target) => {
+    if (!activeBattleLog || activeBattleLog.finished || !fighter || !card || activeBattleLog.actions.length >= 120) return;
+    activeBattleLog.actions.push({
+      round: Math.max(1, Number(state.round) || 1),
+      turn: Math.max(0, Number(state.turn) || 0),
+      actor: fighter.side,
+      cardId: card.id,
+      kind: card.kind,
+      from: [before.x, before.y],
+      to: [fighter.x, fighter.y],
+      damage: Math.max(0, before.targetHp - (target?.hp ?? before.targetHp)),
+      selfHp: Math.max(0, Math.round(fighter.hp)),
+      selfEnergy: Math.max(0, Math.round(fighter.energy)),
+      evolved: !before.evolved && Boolean(fighter.evolved),
+    });
+  };
+  const writeBattleLog = async (log) => {
+    if (!firebaseReady || !firebaseApi || !currentUser) { storePendingBattleLog(log); return false; }
+    try {
+      await firebaseApi.addDoc(firebaseApi.collection(db, BATTLE_LOG_COLLECTION), {
+        ...log,
+        userId: currentUser.uid,
+        savedAt: firebaseApi.serverTimestamp(),
+      });
+      return true;
+    } catch (error) {
+      console.error('전투 로그 저장 실패', error);
+      storePendingBattleLog(log);
+      return false;
+    }
+  };
+  const flushPendingBattleLogs = async () => {
+    if (flushingBattleLogs || !firebaseReady || !firebaseApi || !currentUser) return;
+    const pending = readPendingBattleLogs();
+    if (!pending.length) return;
+    flushingBattleLogs = true;
+    const unsaved = [];
+    for (const log of pending) {
+      try {
+        await firebaseApi.addDoc(firebaseApi.collection(db, BATTLE_LOG_COLLECTION), {
+          ...log,
+          userId: currentUser.uid,
+          savedAt: firebaseApi.serverTimestamp(),
+        });
+      } catch (error) {
+        console.error('보류 전투 로그 저장 실패', error);
+        unsaved.push(log);
+      }
+    }
+    localStorage.setItem(PENDING_LOGS_KEY, JSON.stringify(unsaved.slice(-10)));
+    flushingBattleLogs = false;
+  };
+  const finishBattleLog = (winner) => {
+    if (!activeBattleLog || activeBattleLog.finished) return;
+    const completedLog = activeBattleLog;
+    completedLog.finished = true;
+    window.setTimeout(() => {
+      const log = {
+        ...completedLog,
+        finishedAt: Date.now(),
+        result: winner?.side === 'player' ? '승리' : '패배',
+        rounds: Math.max(1, Number(state.round) || 1),
+        score: Math.max(0, Math.floor(Number(state.score) || 0)),
+        playerHp: Math.max(0, Math.round(state.player?.hp || 0)),
+        playerEnergy: Math.max(0, Math.round(state.player?.energy || 0)),
+        enemyHp: Math.max(0, Math.round(state.cpu?.hp || 0)),
+        enemyEnergy: Math.max(0, Math.round(state.cpu?.energy || 0)),
+      };
+      if (activeBattleLog === completedLog) activeBattleLog = null;
+      writeBattleLog(log);
+    }, 0);
+  };
   const setSubmitStatus = (message, kind = '') => {
     submitStatus.textContent = message;
     submitStatus.className = `ranking-submit-status ${kind}`;
@@ -137,7 +249,11 @@
       db = firestoreModule.getFirestore(app);
       firebaseApi = firestoreModule;
       firebaseReady = true;
-      authModule.onAuthStateChanged(auth, async (user) => { currentUser = user; await updateAuthUi(firestoreModule); });
+      authModule.onAuthStateChanged(auth, async (user) => {
+        currentUser = user;
+        await updateAuthUi(firestoreModule);
+        if (user) await flushPendingBattleLogs();
+      });
       googleButton.addEventListener('click', async () => {
         googleButton.disabled = true;
         try {
@@ -157,11 +273,26 @@
     }
   };
 
+  const originalResolveAction = window.resolveAction;
+  window.resolveAction = (fighter, card) => {
+    const target = opponentOf(fighter);
+    const before = {
+      x: fighter?.x || 0,
+      y: fighter?.y || 0,
+      targetHp: target?.hp ?? 0,
+      evolved: Boolean(fighter?.evolved),
+    };
+    const result = originalResolveAction?.(fighter, card);
+    recordBattleAction(fighter, card, before, target);
+    return result;
+  };
+
   const originalFinishBattle = window.finishBattle;
   window.finishBattle = (winner) => {
     const defeated = winner?.side !== 'player';
     if (!defeated) resultPanel.hidden = true;
     originalFinishBattle?.(winner);
+    finishBattleLog(winner);
     if (!defeated) return;
     window.setTimeout(() => {
       resultPanel.hidden = false;
@@ -171,9 +302,19 @@
 
   const hideResultRanking = () => { resultPanel.hidden = true; };
   const originalStartBattle = window.startBattle;
-  window.startBattle = (...args) => { hideResultRanking(); return originalStartBattle?.(...args); };
+  window.startBattle = (...args) => {
+    hideResultRanking();
+    const result = originalStartBattle?.(...args);
+    startBattleLog();
+    return result;
+  };
   const originalStartNextBattle = window.startNextBattle;
-  window.startNextBattle = (...args) => { hideResultRanking(); return originalStartNextBattle?.(...args); };
+  window.startNextBattle = (...args) => {
+    hideResultRanking();
+    const result = originalStartNextBattle?.(...args);
+    startBattleLog();
+    return result;
+  };
 
   initialize();
 })();
