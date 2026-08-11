@@ -377,6 +377,37 @@
 .fighter-passive b { color:var(--lime); white-space:nowrap; }
 .fighter-passive span { color:#b8cecc; }
 .cpu-hud .fighter-passive { justify-content:flex-end; }
+
+/* Compact mobile battle header: the round readout gets its own row so both HUDs retain usable width. */
+@media (max-width:640px) {
+  .battle-screen { padding-top:20px; }
+  .battle-head { grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; margin-bottom:16px; }
+  .round-badge { grid-column:1 / -1; display:flex; min-width:0; padding:9px 10px; align-items:center; justify-content:center; gap:7px; border:1px solid var(--line); background:rgba(18,28,37,.72); }
+  .round-badge span,.round-badge small { display:inline; margin:0; font-size:10px; line-height:1; letter-spacing:.08em; white-space:nowrap; }
+  .round-badge .stage-readout { margin:0 !important; color:var(--lime) !important; }
+  .round-badge strong { flex:0 0 auto; margin:0; font-size:36px; line-height:.8; }
+  .round-badge .score-readout { display:flex; align-items:baseline; gap:4px; margin:0 0 0 3px; padding:0 0 0 8px; border:0; border-left:1px solid rgba(237,243,242,.16); }
+  .round-badge .score-readout span,.round-badge .score-readout strong { display:inline; margin:0; font-size:10px; line-height:1; }
+  .round-badge .score-readout strong { font-size:15px; }
+  .fighter-hud { padding:10px; }
+  .fighter-avatar { width:48px; height:48px; flex-basis:48px; }
+  .fighter-art { width:175%; height:175%; }
+  .fighter-main { align-items:flex-start; gap:8px; }
+  .fighter-name { font-size:18px; line-height:1.05; word-break:keep-all; }
+  .fighter-generation { margin-top:3px; white-space:nowrap; }
+  .fighter-passive { display:block; margin-top:6px; line-height:1.35; }
+  .fighter-passive b,.fighter-passive span { display:block; }
+  .cpu-hud .fighter-passive { text-align:right; }
+  .meter-labels { margin-top:10px; letter-spacing:.03em; }
+  .evolution-label { margin-top:7px; }
+}
+
+@media (max-width:420px) {
+  .round-badge { flex-wrap:wrap; row-gap:6px; }
+  .round-badge #round-state { display:none; }
+  .battle-head { grid-template-columns:1fr; }
+  .fighter-hud.cpu-hud { grid-row:auto; }
+}
 @media (max-width:700px) {
   .evolution-label { font-size:11px; }
   .pokemon-card { min-height:225px; }
