@@ -9,7 +9,12 @@
     { id: 'max-energy-10', name: '\uC758\uC695 \uAC15\uD654', ko: '\uCD5C\uB300 \uC758\uC695 +10', icon: '\u26A1', kind: 'upgrade', priority: 6, energy: 0, label: '\uC758\uC695 +10', upgrade: 'maxEnergy', amount: 10 },
     { id: 'impact-crash', name: '\uAC15\uD0C0', ko: '\uAC15\uB825\uD55C \uCDA9\uB3CC', icon: '\u2739', kind: 'attack', priority: 5, energy: 25, label: '\uAC15\uD0C0', damage: 38, range: 1 },
     { id: 'pulse-shot', name: '\uD30C\uB3D9\uD0C4', ko: '\uBA40\uB9AC \uBC1C\uC0AC\uD558\uB294 \uD30C\uB3D9', icon: '\u2248', kind: 'attack', priority: 3, energy: 28, label: '\uD30C\uB3D9\uD0C4', damage: 36, range: 3 },
-    { id: 'wide-burst', name: '\uD3ED\uBC1C \uD0C0\uACA9', ko: '\uB113\uAC8C \uD37C\uC9C0\uB294 \uD0C0\uACA9', icon: '\u2736', kind: 'attack', priority: 4, energy: 22, label: '\uD3ED\uBC1C \uD0C0\uACA9', damage: 32, range: 2 }
+    { id: 'wide-burst', name: '\uD3ED\uBC1C \uD0C0\uACA9', ko: '\uB113\uAC8C \uD37C\uC9C0\uB294 \uD0C0\uACA9', icon: '\u2736', kind: 'attack', priority: 4, energy: 22, label: '\uD3ED\uBC1C \uD0C0\uACA9', damage: 32, range: 2 },
+    { id: 'diagonal-strike', name: '\uC0AC\uC120 \uCC0C\uB974\uAE30', ko: '\uC804\uBC29 \uB300\uAC01\uC120 \uB450 \uCE78 \uACF5\uACA9', icon: '\u2572', kind: 'attack', priority: 4, energy: 24, label: '\uC0AC\uC120 \uCC0C\uB974\uAE30', damage: 35, range: 1, pattern: [2, 8] },
+    { id: 'reverse-diagonal-strike', name: '\uC5ED\uC0AC\uC120 \uBC18\uACA9', ko: '\uD6C4\uBC29 \uB300\uAC01\uC120 \uB450 \uCE78 \uACF5\uACA9', icon: '\u2571', kind: 'attack', priority: 5, energy: 22, label: '\uC5ED\uC0AC\uC120 \uBC18\uACA9', damage: 33, range: 1, pattern: [0, 6] },
+    { id: 'upper-diagonal-shot', name: '\uC0C1\uB2E8 \uC0AC\uC120\uD0C4', ko: '\uC0C1\uB2E8 \uB300\uAC01\uC120 \uB450 \uCE78 \uACF5\uACA9', icon: '\u2571', kind: 'attack', priority: 4, energy: 23, label: '\uC0C1\uB2E8 \uC0AC\uC120\uD0C4', damage: 34, range: 1, pattern: [0, 2] },
+    { id: 'lower-diagonal-shot', name: '\uD558\uB2E8 \uC0AC\uC120\uD0C4', ko: '\uD558\uB2E8 \uB300\uAC01\uC120 \uB450 \uCE78 \uACF5\uACA9', icon: '\u2572', kind: 'attack', priority: 4, energy: 23, label: '\uD558\uB2E8 \uC0AC\uC120\uD0C4', damage: 34, range: 1, pattern: [6, 8] },
+    { id: 'cross-burst', name: '\uAD50\uCC28 \uD3ED\uBC1C', ko: '\uB124 \uB300\uAC01 \uCE78\uC5D0 \uD3ED\uBC1C\uC744 \uC77C\uC73C\uD0B4', icon: '\u2726', kind: 'attack', priority: 3, energy: 33, label: '\uAD50\uCC28 \uD3ED\uBC1C', damage: 43, range: 1, pattern: [0, 2, 6, 8] }
   ];
 
   state.playerBonusCards = state.playerBonusCards || [];
