@@ -124,18 +124,18 @@ service cloud.firestore {
         return isHost()
           || (isGuest()
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-              'guestPokemonId', 'guestQueue', 'guestConnectedAt', 'updatedAt'
+              'guestPokemonId', 'guestQueue', 'guestReady', 'guestConnectedAt', 'updatedAt'
             ]))
           || (isJoiningGuest()
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-              'guestId', 'guestPokemonId', 'guestQueue', 'guestConnectedAt', 'status', 'updatedAt'
+              'guestId', 'guestPokemonId', 'guestQueue', 'guestReady', 'guestConnectedAt', 'status', 'updatedAt'
             ]));
       }
 
       function validRoom() {
         return request.resource.data.keys().hasOnly([
             'hostId', 'guestId', 'hostPokemonId', 'guestPokemonId', 'hostQueue',
-            'guestQueue', 'status', 'round', 'turn', 'lastFirst', 'mapTheme', 'selectionSeconds', 'selectionDeadline',
+            'guestQueue', 'hostReady', 'guestReady', 'status', 'round', 'turn', 'lastFirst', 'mapTheme', 'selectionSeconds', 'selectionDeadline',
             'battleState', 'hostConnectedAt', 'guestConnectedAt', 'disconnectAt',
             'disconnectedSide', 'winnerSide', 'createdAt', 'updatedAt'
           ])
@@ -147,6 +147,8 @@ service cloud.firestore {
           && request.resource.data.hostQueue.size() <= 3
           && request.resource.data.guestQueue is list
           && request.resource.data.guestQueue.size() <= 3
+          && (request.resource.data.hostReady == null || request.resource.data.hostReady is bool)
+          && (request.resource.data.guestReady == null || request.resource.data.guestReady is bool)
           && request.resource.data.status in ['waiting', 'partner-select', 'selecting', 'resolving', 'finished']
           && request.resource.data.round is int
           && request.resource.data.round >= 1

@@ -41,6 +41,8 @@
   const enemyKey = () => roomRole === 'host' ? 'guest' : 'host';
   const ownQueueKey = () => `${ownKey()}Queue`;
   const enemyQueueKey = () => `${enemyKey()}Queue`;
+  const ownReadyKey = () => `${ownKey()}Ready`;
+  const enemyReadyKey = () => `${enemyKey()}Ready`;
   const ownPokemonKey = () => `${ownKey()}PokemonId`;
   const statusText = (message, kind = '') => {
     if (!battleStatus) return;
@@ -103,6 +105,8 @@
     delete state.roomPartnerCode;
     delete state.multiplayerRoom;
     delete state.multiplayer;
+    delete state.multiplayerReady;
+    delete state.multiplayerEnemyReady;
     setWaitingHostUi(false);
     statusText('');
   };
@@ -171,7 +175,7 @@
       const hostQueue = queueWithRandomCards(state.player, state.queue);
       const guestQueue = queueWithRandomCards(state.cpu, state.cpuQueue);
       if (hostQueue.length !== 3 || guestQueue.length !== 3) return;
-      await updateRoom({ hostQueue, guestQueue, selectionDeadline: null });
+      await updateRoom({ hostQueue, guestQueue, hostReady: true, guestReady: true, selectionDeadline: null });
       statusText('선택 시간이 종료되어 남은 카드를 무작위로 채웠습니다.', 'is-warning');
     } catch (error) {
       console.error(error);
@@ -255,7 +259,7 @@
           if (existing.exists()) throw new Error('room-code-collision');
           transaction.set(ref, {
             hostId: user.uid, guestId: null, hostPokemonId: null, guestPokemonId: null,
-            hostQueue: [], guestQueue: [], status: 'waiting', round: 1, turn: 0,
+            hostQueue: [], guestQueue: [], hostReady: false, guestReady: false, status: 'waiting', round: 1, turn: 0,
             lastFirst: 'host', mapTheme: ['grassland', 'forest', 'lake'][Math.floor(Math.random() * 3)],
             battleState: {}, selectionSeconds, selectionDeadline: null, hostConnectedAt: now, guestConnectedAt: null,
             disconnectAt: null, disconnectedSide: null, winnerSide: null, createdAt: now, updatedAt: now,
@@ -344,7 +348,7 @@
     state.cpu = restoreFighter(cleanFighter({ ...guest, attacks: guest.attacks, maxHp: 100, maxEnergy: 100, hp: 100, energy: 100, x: 4, y: 2 }), 'cpu');
     state.round = 1; state.turn = 0; state.lastFirst = 'player'; state.hazard = new Set(); state.fieldItems = [];
     state.nextFieldItemRound = 5 + Math.floor(Math.random() * 4); state.queue = []; state.cpuQueue = [];
-    state.gameOver = false; state.executing = false; state.previewCard = null; state.mapTheme = room.mapTheme;
+    state.gameOver = false; state.executing = false; state.previewCard = null; state.multiplayerReady = false; state.multiplayerEnemyReady = false; state.mapTheme = room.mapTheme;
     window.resetBattleActionHistory?.();
     pendingMode = null; delete state.roomPartnerCode;
     await updateRoom({ battleState: serializeBattle(), status: 'selecting', round: 1, turn: 0, lastFirst: 'host', selectionDeadline: Date.now() + roomSelectionSeconds(room) * 1000 });
@@ -361,6 +365,7 @@
     state.round = Number(room.round || 1); state.turn = Number(room.turn || 0);
     state.lastFirst = room.lastFirst === ownKey() ? 'player' : 'cpu';
     state.mapTheme = room.mapTheme; state.queue = clone(room[ownQueueKey()] || []); state.cpuQueue = clone(room[enemyQueueKey()] || []);
+    state.multiplayerReady = Boolean(room[ownReadyKey()]); state.multiplayerEnemyReady = Boolean(room[enemyReadyKey()]);
     state.gameOver = room.status === 'finished'; state.executing = room.status === 'resolving';
     window.resetBattleActionHistory?.();
     return true;
@@ -368,13 +373,14 @@
   const publishQueue = async () => {
     if (!isMulti() || applyingSnapshot || state.gameOver) return;
     try {
-      await updateRoom({ [ownQueueKey()]: clone(state.queue), [`${ownKey()}ConnectedAt`]: Date.now() });
+      await updateRoom({ [ownQueueKey()]: clone(state.queue), [ownReadyKey()]: false, [`${ownKey()}ConnectedAt`]: Date.now() });
+      state.multiplayerReady = false;
       statusText(state.queue.length === 3 ? '카드 선택 완료 · 상대를 기다리는 중입니다.' : `카드 ${state.queue.length}/3장 선택`);
     } catch (error) { console.error(error); toast('선택한 카드를 전송하지 못했습니다.'); }
   };
   const publishBattle = async (status = 'selecting', extra = {}) => {
     const deadline = status === 'selecting' ? Date.now() + roomSelectionSeconds(state.multiplayerRoom) * 1000 : null;
-    await updateRoom({ battleState: serializeBattle(), status, round: state.round, turn: state.turn, lastFirst: state.lastFirst === 'player' ? 'host' : 'guest', hostQueue: [], guestQueue: [], selectionDeadline: deadline, ...extra });
+    await updateRoom({ battleState: serializeBattle(), status, round: state.round, turn: state.turn, lastFirst: state.lastFirst === 'player' ? 'host' : 'guest', hostQueue: [], guestQueue: [], hostReady: false, guestReady: false, selectionDeadline: deadline, ...extra });
   };
   const showMultiplayerResult = (winner) => {
     const localWin = winner === ownKey();
@@ -406,7 +412,7 @@
     showMultiplayerResult(winner);
   };
   const runHostRound = () => {
-    if (resolving || roomRole !== 'host' || state.queue.length !== 3 || state.cpuQueue.length !== 3 || state.gameOver) return;
+    if (resolving || roomRole !== 'host' || state.queue.length !== 3 || state.cpuQueue.length !== 3 || !state.multiplayerReady || !state.multiplayerEnemyReady || state.gameOver) return;
     resolving = true; state.executing = true; state.previewCard = null;
     const actions = [];
     for (let slot = 0; slot < 3; slot += 1) {
@@ -486,9 +492,11 @@
     }
     syncSelectionTimer(room);
     if (room.status === 'resolving') statusText('양쪽 카드 공개 · 행동을 진행 중입니다.');
-    else if ((room[ownQueueKey()] || []).length === 3) statusText('카드 선택 완료 · 상대를 기다리는 중입니다.');
+    else if (state.multiplayerReady && state.multiplayerEnemyReady) statusText('양쪽이 턴 실행을 확정했습니다.');
+    else if (state.multiplayerReady) statusText('턴 실행 확정 · 상대의 확정을 기다리는 중입니다.');
+    else if ((room[ownQueueKey()] || []).length === 3) statusText('카드 선택 완료 · 턴 실행을 눌러 확정하세요.');
     else statusText(`카드 ${state.queue.length}/3장 선택 · ${Math.max(0, Math.ceil((Number(room.selectionDeadline || 0) - Date.now()) / 1000))}초`);
-    if (roomRole === 'host' && room.status === 'selecting' && room.hostQueue?.length === 3 && room.guestQueue?.length === 3) runHostRound();
+    if (roomRole === 'host' && room.status === 'selecting' && room.hostQueue?.length === 3 && room.guestQueue?.length === 3 && room.hostReady && room.guestReady) runHostRound();
     checkDisconnect(room);
   };
   const subscribeRoom = () => {
@@ -515,17 +523,44 @@
   document.querySelector('#confirm-selection')?.addEventListener('click', interceptSelectConfirm, true);
   document.addEventListener('click', (event) => {
     if (!isMulti()) return;
-    if (event.target.closest('#advance-round')) { event.preventDefault(); event.stopImmediatePropagation(); publishQueue(); }
+    if (event.target.closest('#advance-round')) {
+      event.preventDefault(); event.stopImmediatePropagation();
+      if (state.queue.length !== 3 || state.multiplayerReady || state.executing) return;
+      state.multiplayerReady = true;
+      renderBattle();
+      updateRoom({ [ownQueueKey()]: clone(state.queue), [ownReadyKey()]: true, [`${ownKey()}ConnectedAt`]: Date.now() })
+        .catch((error) => { console.error(error); state.multiplayerReady = false; renderBattle(); toast('턴 실행 확정에 실패했습니다.'); });
+    }
     const queueButton = event.target.closest('#player-queue [data-queue-index]');
-    if (queueButton && !state.executing) {
+    if (queueButton && !state.executing && !state.multiplayerReady) {
       event.preventDefault(); event.stopImmediatePropagation();
       state.queue.splice(Number(queueButton.dataset.queueIndex), 1); state.previewCard = state.queue.at(-1) || null; renderBattle(); publishQueue();
     }
   }, true);
   const originalToggleCard = window.toggleCard;
-  window.toggleCard = (id) => { const result = originalToggleCard?.(id); if (isMulti()) publishQueue(); return result; };
+  window.toggleCard = (id) => {
+    if (isMulti() && state.multiplayerReady) { toast('턴 실행을 확정한 뒤에는 카드 순서를 바꿀 수 없습니다.'); return; }
+    const result = originalToggleCard?.(id); if (isMulti()) publishQueue(); return result;
+  };
   const originalClearQueue = window.clearQueue;
-  window.clearQueue = () => { const result = originalClearQueue?.(); if (isMulti()) publishQueue(); return result; };
+  window.clearQueue = () => {
+    if (isMulti() && state.multiplayerReady) return;
+    const result = originalClearQueue?.(); if (isMulti()) publishQueue(); return result;
+  };
+  const originalRenderQueue = window.renderQueue;
+  window.renderQueue = () => {
+    originalRenderQueue?.();
+    if (!isMulti()) return;
+    const ready = Boolean(state.multiplayerReady);
+    const advance = document.querySelector('#advance-round');
+    const clear = document.querySelector('#clear-queue');
+    if (advance) {
+      advance.disabled = state.queue.length !== 3 || state.gameOver || state.executing || ready;
+      advance.innerHTML = ready ? '턴 실행 확정 <span>✓</span>' : '턴 실행 <span>→</span>';
+    }
+    if (clear) clear.hidden = ready || state.executing;
+    document.querySelectorAll('#player-queue [data-queue-index]').forEach((slot) => { slot.disabled = ready || state.executing; });
+  };
   const originalFinishBattle = window.finishBattle;
   window.finishBattle = (winner) => {
     if (!isMulti()) return originalFinishBattle?.(winner);
