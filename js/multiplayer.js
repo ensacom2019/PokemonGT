@@ -1,6 +1,6 @@
 (() => {
   const ROOM_COLLECTION = 'pokemonGTournamentRooms';
-  const DISCONNECT_GRACE_MS = 10_000;
+  const DISCONNECT_GRACE_MS = 5_000;
   const HEARTBEAT_MS = 3_000;
   const DEFAULT_SELECTION_SECONDS = 40;
   const MIN_SELECTION_SECONDS = 20;
@@ -32,6 +32,7 @@
   let selectionDeadline = null;
   let timeoutFilling = false;
   let lastCountdownNumber = null;
+  let resultReturnTimer = null;
 
   const firebase = () => window.pokemonFirebase;
   const isMulti = () => Boolean(roomCode && roomRole && state.multiplayer?.roomCode === roomCode);
@@ -91,6 +92,7 @@
     clearInterval(heartbeatTimer); heartbeatTimer = null;
     roomCode = null; roomRole = null; pendingMode = null; resolving = false; applyingSnapshot = false;
     clearInterval(selectionTicker); selectionTicker = null; selectionDeadline = null; timeoutFilling = false;
+    clearTimeout(resultReturnTimer); resultReturnTimer = null;
     lastCountdownNumber = null;
     if (countdownOverlay) countdownOverlay.hidden = true;
     delete state.roomPartnerCode;
@@ -370,6 +372,15 @@
   const showMultiplayerResult = (winner) => {
     const localWin = winner === ownKey();
     state.gameOver = true; state.executing = false; state.resultWinnerSide = localWin ? 'player' : 'cpu';
+    statusText('');
+    toast(localWin ? '대전 승리! 타이틀로 돌아갑니다.' : '대전 패배. 타이틀로 돌아갑니다.');
+    clearTimeout(resultReturnTimer);
+    resultReturnTimer = setTimeout(() => {
+      leaveRoom();
+      state.selected = null;
+      showScreen('start');
+    }, 900);
+    return;
     $('#result-word').textContent = localWin ? '승리!' : '패배!';
     $('#result-summary').innerHTML = `<div class="result-stat"><span>결과</span><strong>${localWin ? '승리' : '패배'}</strong></div><div class="result-stat"><span>라운드</span><strong>${String(state.round).padStart(2, '0')}</strong></div><div class="result-stat"><span>방 코드</span><strong>${roomCode}</strong></div>`;
     document.querySelector('#reward-panel')?.setAttribute('hidden', '');
@@ -416,6 +427,7 @@
       setTimeout(() => {
         if (state.gameOver) { window.clearActionPreview?.(); return; }
         state.turn += 1; resolveAction(action.fighter, action.card); updateActionVisuals(); window.clearActionPreview?.();
+        updateRoom({ battleState: serializeBattle(), status: 'resolving', turn: state.turn, lastFirst: state.lastFirst === 'player' ? 'host' : 'guest' }).catch(console.error);
         cursor += 1; setTimeout(next, 240);
       }, 310);
     };
@@ -452,8 +464,9 @@
     if (roomRole === 'host' && room.status === 'selecting' && (!room.battleState?.host || !room.battleState?.guest)) {
       await hostInitializeBattle(room); return;
     }
-    applyingSnapshot = true;
-    const ready = applyRoomBattle(room);
+    const hostResolvingLocally = roomRole === 'host' && resolving && room.status === 'resolving';
+    applyingSnapshot = !hostResolvingLocally;
+    const ready = hostResolvingLocally || applyRoomBattle(room);
     applyingSnapshot = false;
     if (!ready) { statusText('방장이 전장을 준비하고 있습니다.'); return; }
     if (room.status === 'finished') { showMultiplayerResult(room.winnerSide); return; }
