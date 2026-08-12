@@ -33,6 +33,7 @@
   let selectionTicker = null;
   let selectionDeadline = null;
   let timeoutFilling = false;
+  let initializingBattle = false;
   let lastCountdownNumber = null;
   let resultReturnTimer = null;
 
@@ -111,7 +112,7 @@
   const leaveRoom = () => {
     roomUnsubscribe?.(); roomUnsubscribe = null;
     clearInterval(heartbeatTimer); heartbeatTimer = null;
-    roomCode = null; roomRole = null; pendingMode = null; resolving = false; applyingSnapshot = false;
+    roomCode = null; roomRole = null; pendingMode = null; resolving = false; applyingSnapshot = false; initializingBattle = false;
     clearInterval(selectionTicker); selectionTicker = null; selectionDeadline = null; timeoutFilling = false;
     clearTimeout(resultReturnTimer); resultReturnTimer = null;
     lastCountdownNumber = null;
@@ -361,17 +362,25 @@
   };
 
   const hostInitializeBattle = async (room) => {
-    if (room.battleState?.host && room.battleState?.guest) return;
+    if (initializingBattle || room.battleState?.host && room.battleState?.guest) return;
     const host = pokemonById(room.hostPokemonId); const guest = pokemonById(room.guestPokemonId);
     if (!host || !guest || roomRole !== 'host') return;
-    state.player = restoreFighter(cleanFighter({ ...host, attacks: host.attacks, maxHp: 100, maxEnergy: 100, hp: 100, energy: 100, x: 1, y: 2 }), 'player');
-    state.cpu = restoreFighter(cleanFighter({ ...guest, attacks: guest.attacks, maxHp: 100, maxEnergy: 100, hp: 100, energy: 100, x: 4, y: 2 }), 'cpu');
-    state.round = 1; state.turn = 0; state.lastFirst = 'player'; state.hazard = new Set(); state.fieldItems = [];
-    state.nextFieldItemRound = 5 + Math.floor(Math.random() * 4); state.queue = []; state.cpuQueue = [];
-    state.gameOver = false; state.executing = false; state.previewCard = null; state.multiplayerReady = false; state.multiplayerEnemyReady = false; state.mapTheme = room.mapTheme;
-    window.resetBattleActionHistory?.();
-    pendingMode = null; delete state.roomPartnerCode;
-    await updateRoom({ battleState: serializeBattle(), status: 'selecting', round: 1, turn: 0, lastFirst: 'host', selectionDeadline: Date.now() + roomSelectionSeconds(room) * 1000 });
+    initializingBattle = true;
+    try {
+      state.player = restoreFighter(cleanFighter({ ...host, attacks: host.attacks, maxHp: 100, maxEnergy: 100, hp: 100, energy: 100, x: 1, y: 2 }), 'player');
+      state.cpu = restoreFighter(cleanFighter({ ...guest, attacks: guest.attacks, maxHp: 100, maxEnergy: 100, hp: 100, energy: 100, x: 4, y: 2 }), 'cpu');
+      state.round = 1; state.turn = 0; state.lastFirst = 'player'; state.hazard = new Set(); state.fieldItems = [];
+      state.nextFieldItemRound = 5 + Math.floor(Math.random() * 4); state.queue = []; state.cpuQueue = [];
+      state.gameOver = false; state.executing = false; state.previewCard = null; state.multiplayerReady = false; state.multiplayerEnemyReady = false; state.mapTheme = room.mapTheme;
+      window.resetBattleActionHistory?.();
+      pendingMode = null; delete state.roomPartnerCode;
+      await updateRoom({ battleState: serializeBattle(), status: 'selecting', round: 1, turn: 0, lastFirst: 'host', hostQueue: [], guestQueue: [], hostReady: false, guestReady: false, selectionDeadline: Date.now() + roomSelectionSeconds(room) * 1000 });
+    } catch (error) {
+      console.error('전장 초기화 실패', error);
+      statusText('전장 준비를 다시 시도 중입니다.', 'is-warning');
+    } finally {
+      initializingBattle = false;
+    }
   };
   const applyRoomBattle = (room) => {
     const battle = room.battleState;
