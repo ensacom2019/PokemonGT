@@ -111,7 +111,7 @@
       window.animateCombatAction?.(fighter, target, card, hit);
       if (hit) {
         const typeMultiplier = window.getTypeMultiplier?.(fighter, target) || 1;
-        const damage = Math.round(card.damage * typeMultiplier * (target.guarding ? 0.5 : 1));
+        const damage = Math.round(card.damage * typeMultiplier * (window.getGuardMultiplier?.(target) ?? (target.guarding ? 0.5 : 1)));
         target.hp = clamp(target.hp - damage, 0, target.maxHp || 100);
         const matchupText = typeMultiplier > 1 ? ' \uC0C1\uC131 \uC6B0\uC704! (1.5\uBC30)' : '';
         writeLog(`${fighter.name}\uC758 ${card.name}! ${target.name}\uC5D0\uAC8C ${damage} \uB370\uBBF8\uC9C0.${matchupText}`, 'attack');
