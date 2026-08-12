@@ -27,6 +27,11 @@
 .button-room:hover:not(:disabled) { color:#07181d; border-color:var(--cyan); background:var(--cyan); }
 .button-leave-room { color:#ffc1b8; border-color:rgba(255,105,94,.62); background:rgba(255,105,94,.08); }
 .button-leave-room:hover:not(:disabled) { color:#250d12; border-color:var(--coral); background:var(--coral); }
+.room-code-button { display:inline-flex; align-items:center; gap:7px; min-height:39px; padding:0 11px; border:1px solid rgba(200,242,85,.62); color:var(--lime); background:rgba(200,242,85,.08); cursor:pointer; font:800 11px var(--mono); letter-spacing:.04em; }
+.room-code-button span { color:var(--muted); font-size:10px; }
+.room-code-button b { font:900 16px/1 var(--display); letter-spacing:.16em; }
+.room-code-button i { padding-left:6px; border-left:1px solid rgba(200,242,85,.3); color:var(--cyan); font-style:normal; font-size:10px; }
+.room-code-button:hover { border-color:var(--lime); background:rgba(200,242,85,.16); }
 .multiplayer-lobby { display:none; width:min(100%,360px); margin-top:12px; padding:11px; border:1px solid rgba(101,229,226,.4); background:rgba(8,20,27,.83); box-shadow:6px 6px 0 rgba(101,229,226,.06); }
 .multiplayer-lobby.is-open { display:block; }
 .multiplayer-lobby p { display:flex; flex-wrap:wrap; gap:6px 10px; margin:0 0 9px; color:var(--muted); font-size:11px; }
@@ -92,6 +97,7 @@
   .title-action-row { display:grid; grid-template-columns:1fr 1fr; }
   .title-action-row .button-primary { grid-column:1 / -1; }
   .title-action-row .button { width:100%; }
+  .title-action-row .room-code-button { width:100%; justify-content:center; }
 }
 @media (max-width:700px) { .reward-options { grid-template-columns:1fr; } .reward-heading strong { font-size:20px; } }
 

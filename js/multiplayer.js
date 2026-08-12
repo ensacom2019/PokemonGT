@@ -20,6 +20,7 @@
   const createButton = document.querySelector('#create-room');
   const openJoinButton = document.querySelector('#open-room-entry');
   const leaveButton = document.querySelector('#leave-room');
+  const hostRoomCodeButton = document.querySelector('#host-room-code');
   const joinButton = document.querySelector('#join-room');
 
   let roomCode = null;
@@ -52,9 +53,15 @@
   };
   const lobbyText = (message) => { if (lobbyStatus) lobbyStatus.textContent = message; };
   const setLobbyOpen = (open) => { lobby?.classList.toggle('is-open', Boolean(open)); };
+  const setHostRoomCode = (code = '') => {
+    if (!hostRoomCodeButton) return;
+    hostRoomCodeButton.hidden = !code;
+    hostRoomCodeButton.querySelector('b').textContent = code || '-----';
+  };
   const setWaitingHostUi = (active) => {
     document.querySelectorAll('.title-action-row > button:not(#leave-room)').forEach((button) => { button.hidden = active; });
     if (leaveButton) leaveButton.hidden = !active;
+    setHostRoomCode(active ? roomCode : '');
   };
   const roomSelectionSeconds = (room) => Math.max(MIN_SELECTION_SECONDS, Math.min(MAX_SELECTION_SECONDS, Number(room?.selectionSeconds) || DEFAULT_SELECTION_SECONDS));
   const roomCodeFor = () => Array.from({ length: 5 }, () => ROOM_ALPHABET[Math.floor(Math.random() * ROOM_ALPHABET.length)]).join('');
@@ -115,6 +122,7 @@
     delete state.multiplayerReady;
     delete state.multiplayerEnemyReady;
     setWaitingHostUi(false);
+    setHostRoomCode('');
     lobby.hidden = true; setLobbyOpen(false);
     createConfig.hidden = true;
     roomEntryForm.hidden = true;
@@ -283,6 +291,7 @@
       state.multiplayer = { roomCode, role: roomRole };
       createConfig.hidden = true;
       setWaitingHostUi(true);
+      setHostRoomCode(roomCode);
       lobby.hidden = true; setLobbyOpen(false); lobbyText(`방 코드 ${roomCode} · 상대 입장을 기다리는 중`);
       showScreen('start');
       subscribeRoom(); startHeartbeat();
@@ -527,6 +536,15 @@
   selectionSecondsInput?.addEventListener('input', () => { selectionSecondsOutput.textContent = `${selectionSecondsInput.value}초`; });
   confirmRoomCreateButton?.addEventListener('click', () => makeRoom());
   leaveButton?.addEventListener('click', () => { leaveRoom(); lobby.hidden = true; setLobbyOpen(false); showScreen('start'); });
+  hostRoomCodeButton?.addEventListener('click', async () => {
+    if (!roomCode) return;
+    try {
+      await navigator.clipboard?.writeText(roomCode);
+      const label = hostRoomCodeButton.querySelector('i');
+      if (label) label.textContent = '복사됨';
+      setTimeout(() => { if (label) label.textContent = '복사'; }, 1200);
+    } catch { toast(`방 코드: ${roomCode}`); }
+  });
   openJoinButton?.addEventListener('click', openJoin);
   joinButton?.addEventListener('click', prepareJoin);
   codeInput?.addEventListener('input', () => { codeInput.value = codeInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5); });
