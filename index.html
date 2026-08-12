@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#10141f" />
     <title>포켓몬 // 그리드 배틀</title>
     <link rel="stylesheet" href="css/styles.css?v=8" />
-    <link rel="stylesheet" href="css/backgrounds.css?v=45" />
+    <link rel="stylesheet" href="css/backgrounds.css?v=46" />
   </head>
   <body>
     <div class="scanlines" aria-hidden="true"></div>
@@ -28,6 +28,7 @@
             <button class="button button-primary" data-action="go-select">전투 시작 <span>→</span></button>
             <button id="create-room" class="button button-room" type="button">방 생성</button>
             <button id="open-room-entry" class="button button-room" type="button">대전 입장</button>
+            <button id="leave-room" class="button button-room button-leave-room" type="button" hidden>방 나가기</button>
           </div>
           <div id="multiplayer-lobby" class="multiplayer-lobby" hidden>
             <p><b>1:1 대전</b><span id="multiplayer-lobby-status">방 코드를 입력하세요.</span></p>
@@ -150,6 +151,6 @@
     <script src="js/battle-items.js?v=1"></script>
     <script src="js/ranking-firebase.js?v=6"></script>
     <script src="js/audio.js?v=6"></script>
-    <script src="js/multiplayer.js?v=5"></script>
+    <script src="js/multiplayer.js?v=6"></script>
   </body>
 </html>

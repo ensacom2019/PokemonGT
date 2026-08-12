@@ -19,6 +19,7 @@
   const countdownOverlay = document.querySelector('#multiplayer-countdown');
   const createButton = document.querySelector('#create-room');
   const openJoinButton = document.querySelector('#open-room-entry');
+  const leaveButton = document.querySelector('#leave-room');
   const joinButton = document.querySelector('#join-room');
 
   let roomCode = null;
@@ -48,6 +49,10 @@
     battleStatus.innerHTML = message ? `<b>1:1 대전</b>${message}` : '';
   };
   const lobbyText = (message) => { if (lobbyStatus) lobbyStatus.textContent = message; };
+  const setWaitingHostUi = (active) => {
+    document.querySelectorAll('.title-action-row > button:not(#leave-room)').forEach((button) => { button.hidden = active; });
+    if (leaveButton) leaveButton.hidden = !active;
+  };
   const roomSelectionSeconds = (room) => Math.max(MIN_SELECTION_SECONDS, Math.min(MAX_SELECTION_SECONDS, Number(room?.selectionSeconds) || DEFAULT_SELECTION_SECONDS));
   const roomCodeFor = () => Array.from({ length: 5 }, () => ROOM_ALPHABET[Math.floor(Math.random() * ROOM_ALPHABET.length)]).join('');
   const clone = (value) => JSON.parse(JSON.stringify(value));
@@ -98,6 +103,7 @@
     delete state.roomPartnerCode;
     delete state.multiplayerRoom;
     delete state.multiplayer;
+    setWaitingHostUi(false);
     statusText('');
   };
   const apiReady = async () => {
@@ -261,6 +267,7 @@
       roomCode = created; roomRole = 'host'; pendingMode = null;
       state.multiplayer = { roomCode, role: roomRole };
       createConfig.hidden = true;
+      setWaitingHostUi(true);
       lobby.hidden = false; lobbyText(`방 코드 ${roomCode} · 상대 입장을 기다리는 중`);
       showScreen('start');
       subscribeRoom(); startHeartbeat();
@@ -455,7 +462,8 @@
   const onRoom = async (snapshot) => {
     if (!snapshot.exists() || !isMulti()) { toast('대전방을 찾을 수 없습니다.'); leaveRoom(); showScreen('start'); return; }
     const room = snapshot.data();
-    if (room.status === 'waiting') { lobby.hidden = false; lobbyText(`방 코드 ${roomCode} · 상대 입장을 기다리는 중`); return; }
+    if (room.status === 'waiting') { setWaitingHostUi(roomRole === 'host'); lobby.hidden = false; lobbyText(`방 코드 ${roomCode} · 상대 입장을 기다리는 중`); return; }
+    setWaitingHostUi(false);
     if (room.status === 'partner-select') {
       showPartnerSelect(room);
       if (roomRole === 'host' && room.hostPokemonId && room.guestPokemonId) await hostInitializeBattle(room);
@@ -499,6 +507,7 @@
   });
   selectionSecondsInput?.addEventListener('input', () => { selectionSecondsOutput.textContent = `${selectionSecondsInput.value}초`; });
   confirmRoomCreateButton?.addEventListener('click', () => makeRoom());
+  leaveButton?.addEventListener('click', () => { leaveRoom(); lobby.hidden = true; showScreen('start'); });
   openJoinButton?.addEventListener('click', openJoin);
   joinButton?.addEventListener('click', prepareJoin);
   codeInput?.addEventListener('input', () => { codeInput.value = codeInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5); });
