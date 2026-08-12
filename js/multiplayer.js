@@ -34,6 +34,7 @@
   let selectionDeadline = null;
   let timeoutFilling = false;
   let initializingBattle = false;
+  let multiplayerResultShown = false;
   let lastCountdownNumber = null;
   let resultReturnTimer = null;
 
@@ -112,7 +113,7 @@
   const leaveRoom = () => {
     roomUnsubscribe?.(); roomUnsubscribe = null;
     clearInterval(heartbeatTimer); heartbeatTimer = null;
-    roomCode = null; roomRole = null; pendingMode = null; resolving = false; applyingSnapshot = false; initializingBattle = false;
+    roomCode = null; roomRole = null; pendingMode = null; resolving = false; applyingSnapshot = false; initializingBattle = false; multiplayerResultShown = false;
     clearInterval(selectionTicker); selectionTicker = null; selectionDeadline = null; timeoutFilling = false;
     clearTimeout(resultReturnTimer); resultReturnTimer = null;
     lastCountdownNumber = null;
@@ -412,23 +413,23 @@
     await updateRoom({ battleState: serializeBattle(), status, round: state.round, turn: state.turn, lastFirst: state.lastFirst === 'player' ? 'host' : 'guest', hostQueue: [], guestQueue: [], hostReady: false, guestReady: false, selectionDeadline: deadline, ...extra });
   };
   const showMultiplayerResult = (winner) => {
+    if (multiplayerResultShown) return;
+    multiplayerResultShown = true;
     const localWin = winner === ownKey();
     state.gameOver = true; state.executing = false; state.resultWinnerSide = localWin ? 'player' : 'cpu';
     statusText('');
-    toast(localWin ? '대전 승리! 타이틀로 돌아갑니다.' : '대전 패배. 타이틀로 돌아갑니다.');
-    clearTimeout(resultReturnTimer);
-    resultReturnTimer = setTimeout(() => {
-      leaveRoom();
-      state.selected = null;
-      showScreen('start');
-    }, 900);
-    return;
+    roomUnsubscribe?.(); roomUnsubscribe = null;
+    clearInterval(heartbeatTimer); heartbeatTimer = null;
+    clearInterval(selectionTicker); selectionTicker = null;
+    if (countdownOverlay) countdownOverlay.hidden = true;
     $('#result-word').textContent = localWin ? '승리!' : '패배!';
-    $('#result-summary').innerHTML = `<div class="result-stat"><span>결과</span><strong>${localWin ? '승리' : '패배'}</strong></div><div class="result-stat"><span>라운드</span><strong>${String(state.round).padStart(2, '0')}</strong></div><div class="result-stat"><span>방 코드</span><strong>${roomCode}</strong></div>`;
+    $('#result-summary').innerHTML = `<div class="result-stat"><span>결과</span><strong>${localWin ? '승리' : '패배'}</strong></div><div class="result-stat"><span>라운드</span><strong>${String(state.round).padStart(2, '0')}</strong></div><div class="result-stat"><span>남은 체력</span><strong>${formatHp(state.player?.hp || 0)}</strong></div>`;
     document.querySelector('#reward-panel')?.setAttribute('hidden', '');
     document.querySelector('#stage-event-panel')?.setAttribute('hidden', '');
+    document.querySelector('#result-ranking')?.setAttribute('hidden', '');
+    const nextButton = document.querySelector('#next-battle');
+    if (nextButton) nextButton.innerHTML = '타이틀로 돌아가기 <span>↗</span>';
     showScreen('result');
-    statusText('');
   };
   const persistHostFinish = async (winner, patch = {}) => {
     try { await publishBattle('finished', { winnerSide: winner, ...patch }); } catch (error) { console.error(error); }
@@ -554,6 +555,13 @@
       setTimeout(() => { if (label) label.textContent = '복사'; }, 1200);
     } catch { toast(`방 코드: ${roomCode}`); }
   });
+  document.addEventListener('click', (event) => {
+    if (!multiplayerResultShown || !event.target.closest('#next-battle')) return;
+    event.preventDefault(); event.stopImmediatePropagation(); event.stopPropagation();
+    leaveRoom();
+    state.selected = null;
+    showScreen('start');
+  }, true);
   openJoinButton?.addEventListener('click', openJoin);
   joinButton?.addEventListener('click', prepareJoin);
   codeInput?.addEventListener('input', () => { codeInput.value = codeInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5); });
