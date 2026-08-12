@@ -133,9 +133,43 @@
     const attacks = affordable.filter((card) => card.kind === 'attack' && attackPatternContains(cpu, player, card)).sort((a, b) => b.damage - a.damage || b.priority - a.priority);
     const guard = affordable.find((card) => card.kind === 'guard');
     const energy = affordable.find((card) => card.kind === 'energy');
-    const move = affordable.find((card) => card.kind === 'move' && card.id === 'back2') || affordable.find((card) => card.kind === 'move');
-    const fill = (seed) => [...seed, ...base, ...attacks.map((card) => card.id)].filter(Boolean).slice(0, 3);
-    if (cpu.aiPersonality === 'aggressive' && player.hp <= Math.max(55, cpu.hp)) return preventMoveOnlyQueue(fill([attacks[0]?.id, attacks[0]?.id, attacks[1]?.id]));
+    const moves = affordable.filter((card) => card.kind === 'move');
+    const move = moves.find((card) => card.id === 'back2') || moves[0];
+    const openingCard = state.queue[0] ? cardById(state.queue[0]) : null;
+    const predictedPlayer = { ...player };
+    if (openingCard?.kind === 'move') {
+      const delta = window.getMovementDelta?.(player, openingCard) || { dx: openingCard.dx || 0, dy: openingCard.dy || 0 };
+      predictedPlayer.x = clamp(player.x + delta.dx, 0, 5);
+      predictedPlayer.y = clamp(player.y + delta.dy, 0, 4);
+    }
+    const predictedAttacks = affordable.filter((card) => card.kind === 'attack' && attackPatternContains(cpu, predictedPlayer, card)).sort((a, b) => b.damage - a.damage || b.priority - a.priority);
+    const movePosition = (card) => {
+      const delta = window.getMovementDelta?.(cpu, card) || { dx: card.dx || 0, dy: card.dy || 0 };
+      return { x: clamp(cpu.x + delta.dx, 0, 5), y: clamp(cpu.y + delta.dy, 0, 4) };
+    };
+    const openingThreat = openingCard?.kind === 'attack' && attackPatternContains(player, cpu, openingCard);
+    const escapeMove = moves.find((card) => {
+      const position = movePosition(card);
+      return (position.x !== cpu.x || position.y !== cpu.y) && (openingCard?.kind !== 'attack' || !attackPatternContains(player, { ...cpu, ...position }, openingCard));
+    });
+    const closeMove = [...moves].sort((left, right) => {
+      const a = movePosition(left); const b = movePosition(right);
+      return Math.abs(a.x - predictedPlayer.x) + Math.abs(a.y - predictedPlayer.y) - (Math.abs(b.x - predictedPlayer.x) + Math.abs(b.y - predictedPlayer.y));
+    }).find((card) => {
+      const position = movePosition(card);
+      return !state.hazard?.has(`${position.x},${position.y}`);
+    });
+    const itemMove = moves.find((card) => {
+      const position = movePosition(card);
+      return state.fieldItems?.some((item) => item.x === position.x && item.y === position.y);
+    });
+    const fill = (seed) => [...seed, ...base, ...predictedAttacks.map((card) => card.id), ...attacks.map((card) => card.id)].filter(Boolean).slice(0, 3);
+
+    // The AI sees only the first queued player card: it reacts to the opening without reading the full hand.
+    if (openingCard?.kind === 'attack' && openingThreat) return preventMoveOnlyQueue(fill([guard?.id, escapeMove?.id, predictedAttacks[0]?.id]));
+    if (openingCard?.kind === 'move') return preventMoveOnlyQueue(fill([predictedAttacks[0]?.id, itemMove?.id, closeMove?.id]));
+    if (openingCard && ['energy', 'evolution'].includes(openingCard.kind)) return preventMoveOnlyQueue(fill([predictedAttacks[0]?.id, closeMove?.id, attacks[0]?.id]));
+    if (cpu.aiPersonality === 'aggressive' && player.hp <= Math.max(55, cpu.hp)) return preventMoveOnlyQueue(fill([attacks[0]?.id, attacks[1]?.id, closeMove?.id]));
     if (cpu.aiPersonality === 'cautious' && cpu.hp <= (cpu.maxHp || 100) * 0.5) return preventMoveOnlyQueue(fill([guard?.id, energy?.id, attacks[0]?.id]));
     if (cpu.aiPersonality === 'skirmisher' && Math.abs(cpu.x - player.x) + Math.abs(cpu.y - player.y) <= 1) return preventMoveOnlyQueue(fill([move?.id, attacks[0]?.id]));
     return preventMoveOnlyQueue(base);
