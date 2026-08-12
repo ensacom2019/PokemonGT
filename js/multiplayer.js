@@ -192,7 +192,8 @@
   const showPartnerSelect = (room) => {
     const ownPokemonId = room[ownPokemonKey()];
     pendingMode = 'partner';
-    if (state.screen !== 'select' || state.roomPartnerCode !== roomCode) {
+    const enteringPartnerSelect = state.screen !== 'select' || state.roomPartnerCode !== roomCode;
+    if (enteringPartnerSelect) {
       renderRoster(); state.selected = null; state.roomPartnerCode = roomCode;
       showScreen('select');
     }
@@ -210,7 +211,13 @@
       confirm.innerHTML = '파트너 선택 완료';
       return;
     }
-    state.selected = null;
+    if (state.selected) {
+      const selected = pokemonById(state.selected);
+      $('#selection-status').innerHTML = `선택 완료 <strong>${selected?.name || '파트너'}</strong> · 파트너 확정을 누르세요.`;
+      confirm.disabled = false;
+      confirm.innerHTML = '파트너 확정 <span>→</span>';
+      return;
+    }
     $('#selection-status').textContent = '상대와 연결되었습니다. 출전할 파트너를 선택하세요.';
     confirm.disabled = true;
     confirm.innerHTML = '파트너 확정 <span>→</span>';
