@@ -36,6 +36,8 @@
 .multiplayer-status b { color:var(--lime); margin-right:8px; }
 .multiplayer-status.is-warning { color:var(--amber); border-color:rgba(255,189,98,.65); }
 .multiplayer-status.is-error { color:#ff9289; border-color:rgba(255,105,94,.65); }
+.multiplayer-countdown { position:fixed; z-index:35; inset:50% auto auto 50%; min-width:112px; padding:14px 18px; border:2px solid var(--coral); color:#fff4d0; background:rgba(42,15,21,.88); box-shadow:0 0 0 8px rgba(255,105,94,.12),0 0 30px rgba(255,105,94,.5); font:900 68px/.8 var(--display); text-align:center; transform:translate(-50%,-50%); pointer-events:none; animation:multiplayer-countdown-pop .82s cubic-bezier(.12,.84,.26,1) both; }
+@keyframes multiplayer-countdown-pop { 0% { opacity:0; transform:translate(-50%,-50%) scale(1.7); } 18% { opacity:1; } 100% { opacity:0; transform:translate(-50%,-50%) scale(.82); } }
 
 /* Title-screen type advantage loop: grass > water > fire > grass. */
 .type-cycle { position:absolute; z-index:5; top:20px; left:18px; width:min(44%,300px); padding:12px 13px 9px; border:1px solid rgba(101,229,226,.38); background:linear-gradient(135deg,rgba(101,229,226,.12),rgba(10,18,25,.94) 55%); box-shadow:7px 7px 0 rgba(101,229,226,.06); }

@@ -9,6 +9,7 @@
   const lobbyStatus = document.querySelector('#multiplayer-lobby-status');
   const codeInput = document.querySelector('#room-code-input');
   const battleStatus = document.querySelector('#multiplayer-status');
+  const countdownOverlay = document.querySelector('#multiplayer-countdown');
   const createButton = document.querySelector('#create-room');
   const openJoinButton = document.querySelector('#open-room-entry');
   const joinButton = document.querySelector('#join-room');
@@ -23,6 +24,7 @@
   let selectionTicker = null;
   let selectionDeadline = null;
   let timeoutFilling = false;
+  let lastCountdownNumber = null;
 
   const firebase = () => window.pokemonFirebase;
   const isMulti = () => Boolean(roomCode && roomRole && state.multiplayer?.roomCode === roomCode);
@@ -81,6 +83,8 @@
     clearInterval(heartbeatTimer); heartbeatTimer = null;
     roomCode = null; roomRole = null; pendingMode = null; resolving = false; applyingSnapshot = false;
     clearInterval(selectionTicker); selectionTicker = null; selectionDeadline = null; timeoutFilling = false;
+    lastCountdownNumber = null;
+    if (countdownOverlay) countdownOverlay.hidden = true;
     delete state.roomPartnerCode;
     delete state.multiplayer;
     statusText('');
@@ -133,6 +137,15 @@
     if (!isMulti() || !selectionDeadline || state.executing || state.gameOver) return;
     const remaining = Math.max(0, Math.ceil((selectionDeadline - Date.now()) / 1000));
     $('#round-state').textContent = `선택 ${String(remaining).padStart(2, '0')}초`;
+    if (remaining <= 5 && remaining >= 1 && remaining !== lastCountdownNumber && countdownOverlay) {
+      lastCountdownNumber = remaining;
+      countdownOverlay.hidden = false;
+      countdownOverlay.textContent = String(remaining);
+      countdownOverlay.style.animation = 'none';
+      void countdownOverlay.offsetWidth;
+      countdownOverlay.style.animation = '';
+      setTimeout(() => { if (countdownOverlay?.textContent === String(remaining)) countdownOverlay.hidden = true; }, 820);
+    }
   };
   const fillQueuesOnTimeout = async () => {
     if (!isMulti() || roomRole !== 'host' || timeoutFilling || state.executing || state.gameOver) return;
@@ -153,6 +166,8 @@
     const deadline = Number(room.selectionDeadline || 0);
     if (room.status !== 'selecting' || !deadline) {
       clearInterval(selectionTicker); selectionTicker = null; selectionDeadline = null;
+      lastCountdownNumber = null;
+      if (countdownOverlay) countdownOverlay.hidden = true;
       return;
     }
     selectionDeadline = deadline;
