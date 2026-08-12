@@ -27,7 +27,8 @@
 .button-room:hover:not(:disabled) { color:#07181d; border-color:var(--cyan); background:var(--cyan); }
 .button-leave-room { color:#ffc1b8; border-color:rgba(255,105,94,.62); background:rgba(255,105,94,.08); }
 .button-leave-room:hover:not(:disabled) { color:#250d12; border-color:var(--coral); background:var(--coral); }
-.multiplayer-lobby { width:min(100%,360px); margin-top:12px; padding:11px; border:1px solid rgba(101,229,226,.4); background:rgba(8,20,27,.83); box-shadow:6px 6px 0 rgba(101,229,226,.06); }
+.multiplayer-lobby { display:none; width:min(100%,360px); margin-top:12px; padding:11px; border:1px solid rgba(101,229,226,.4); background:rgba(8,20,27,.83); box-shadow:6px 6px 0 rgba(101,229,226,.06); }
+.multiplayer-lobby.is-open { display:block; }
 .multiplayer-lobby p { display:flex; flex-wrap:wrap; gap:6px 10px; margin:0 0 9px; color:var(--muted); font-size:11px; }
 .multiplayer-lobby p b { color:var(--cyan); font:800 12px var(--display); }
 .room-create-config { display:grid; gap:8px; margin-bottom:10px; padding:10px; border:1px solid rgba(200,242,85,.35); background:rgba(200,242,85,.05); }

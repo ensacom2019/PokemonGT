@@ -51,6 +51,7 @@
     battleStatus.innerHTML = message ? `<b>1:1 대전</b>${message}` : '';
   };
   const lobbyText = (message) => { if (lobbyStatus) lobbyStatus.textContent = message; };
+  const setLobbyOpen = (open) => { lobby?.classList.toggle('is-open', Boolean(open)); };
   const setWaitingHostUi = (active) => {
     document.querySelectorAll('.title-action-row > button:not(#leave-room)').forEach((button) => { button.hidden = active; });
     if (leaveButton) leaveButton.hidden = !active;
@@ -108,7 +109,7 @@
     delete state.multiplayerReady;
     delete state.multiplayerEnemyReady;
     setWaitingHostUi(false);
-    lobby.hidden = true;
+    lobby.hidden = true; setLobbyOpen(false);
     createConfig.hidden = true;
     roomEntryForm.hidden = true;
     lobbyText('방 코드를 입력하세요.');
@@ -276,7 +277,7 @@
       state.multiplayer = { roomCode, role: roomRole };
       createConfig.hidden = true;
       setWaitingHostUi(true);
-      lobby.hidden = true; lobbyText(`방 코드 ${roomCode} · 상대 입장을 기다리는 중`);
+      lobby.hidden = true; setLobbyOpen(false); lobbyText(`방 코드 ${roomCode} · 상대 입장을 기다리는 중`);
       showScreen('start');
       subscribeRoom(); startHeartbeat();
       toast(`방 ${roomCode}가 생성되었습니다.`);
@@ -289,7 +290,7 @@
   const openJoin = async () => {
     createConfig.hidden = true;
     roomEntryForm.hidden = false;
-    lobby.hidden = false;
+    lobby.hidden = false; setLobbyOpen(true);
     codeInput?.focus();
     lobbyText('방 코드 5자리를 입력하세요.');
   };
@@ -472,7 +473,7 @@
   const onRoom = async (snapshot) => {
     if (!snapshot.exists() || !isMulti()) { toast('대전방을 찾을 수 없습니다.'); leaveRoom(); showScreen('start'); return; }
     const room = snapshot.data();
-    if (room.status === 'waiting') { setWaitingHostUi(roomRole === 'host'); lobby.hidden = roomRole === 'host'; lobbyText(`방 코드 ${roomCode} · 상대 입장을 기다리는 중`); return; }
+    if (room.status === 'waiting') { setWaitingHostUi(roomRole === 'host'); lobby.hidden = roomRole === 'host'; setLobbyOpen(false); lobbyText(`방 코드 ${roomCode} · 상대 입장을 기다리는 중`); return; }
     setWaitingHostUi(false);
     if (room.status === 'partner-select') {
       showPartnerSelect(room);
@@ -510,7 +511,7 @@
   };
 
   createButton?.addEventListener('click', () => {
-    lobby.hidden = false;
+    lobby.hidden = false; setLobbyOpen(true);
     createConfig.hidden = false;
     roomEntryForm.hidden = true;
     selectionSecondsInput.value = String(DEFAULT_SELECTION_SECONDS);
@@ -519,7 +520,7 @@
   });
   selectionSecondsInput?.addEventListener('input', () => { selectionSecondsOutput.textContent = `${selectionSecondsInput.value}초`; });
   confirmRoomCreateButton?.addEventListener('click', () => makeRoom());
-  leaveButton?.addEventListener('click', () => { leaveRoom(); lobby.hidden = true; showScreen('start'); });
+  leaveButton?.addEventListener('click', () => { leaveRoom(); lobby.hidden = true; setLobbyOpen(false); showScreen('start'); });
   openJoinButton?.addEventListener('click', openJoin);
   joinButton?.addEventListener('click', prepareJoin);
   codeInput?.addEventListener('input', () => { codeInput.value = codeInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5); });
