@@ -2,11 +2,18 @@
   const ROOM_COLLECTION = 'pokemonGTournamentRooms';
   const DISCONNECT_GRACE_MS = 10_000;
   const HEARTBEAT_MS = 3_000;
-  const ROUND_SELECTION_MS = 40_000;
+  const DEFAULT_SELECTION_SECONDS = 40;
+  const MIN_SELECTION_SECONDS = 20;
+  const MAX_SELECTION_SECONDS = 60;
   const ROOM_CODE_RE = /^[A-Z0-9]{5}$/;
   const ROOM_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const lobby = document.querySelector('#multiplayer-lobby');
   const lobbyStatus = document.querySelector('#multiplayer-lobby-status');
+  const createConfig = document.querySelector('#room-create-config');
+  const roomEntryForm = document.querySelector('#room-entry-form');
+  const selectionSecondsInput = document.querySelector('#room-selection-seconds');
+  const selectionSecondsOutput = document.querySelector('#room-selection-seconds-output');
+  const confirmRoomCreateButton = document.querySelector('#confirm-room-create');
   const codeInput = document.querySelector('#room-code-input');
   const battleStatus = document.querySelector('#multiplayer-status');
   const countdownOverlay = document.querySelector('#multiplayer-countdown');
@@ -40,6 +47,7 @@
     battleStatus.innerHTML = message ? `<b>1:1 대전</b>${message}` : '';
   };
   const lobbyText = (message) => { if (lobbyStatus) lobbyStatus.textContent = message; };
+  const roomSelectionSeconds = (room) => Math.max(MIN_SELECTION_SECONDS, Math.min(MAX_SELECTION_SECONDS, Number(room?.selectionSeconds) || DEFAULT_SELECTION_SECONDS));
   const roomCodeFor = () => Array.from({ length: 5 }, () => ROOM_ALPHABET[Math.floor(Math.random() * ROOM_ALPHABET.length)]).join('');
   const clone = (value) => JSON.parse(JSON.stringify(value));
   const cleanCard = (card) => ({ id: card.id, name: card.name, ko: card.ko, icon: card.icon, kind: card.kind, priority: card.priority, energy: card.energy, label: card.label, damage: card.damage ?? null, range: card.range ?? null, restore: card.restore ?? null, dx: card.dx ?? null, dy: card.dy ?? null, relative: card.relative ?? null, pattern: card.pattern ?? null });
@@ -86,6 +94,7 @@
     lastCountdownNumber = null;
     if (countdownOverlay) countdownOverlay.hidden = true;
     delete state.roomPartnerCode;
+    delete state.multiplayerRoom;
     delete state.multiplayer;
     statusText('');
   };
@@ -217,7 +226,9 @@
   const makeRoom = async () => {
     const service = await ensureSignedIn();
     const user = service.getUser();
+    const selectionSeconds = Math.max(MIN_SELECTION_SECONDS, Math.min(MAX_SELECTION_SECONDS, Number(selectionSecondsInput?.value) || DEFAULT_SELECTION_SECONDS));
     createButton.disabled = true;
+    confirmRoomCreateButton.disabled = true;
     try {
       let created = null;
       for (let attempt = 0; attempt < 12 && !created; attempt += 1) {
@@ -231,7 +242,7 @@
             hostId: user.uid, guestId: null, hostPokemonId: null, guestPokemonId: null,
             hostQueue: [], guestQueue: [], status: 'waiting', round: 1, turn: 0,
             lastFirst: 'host', mapTheme: ['grassland', 'forest', 'lake'][Math.floor(Math.random() * 3)],
-            battleState: {}, selectionDeadline: null, hostConnectedAt: now, guestConnectedAt: null,
+            battleState: {}, selectionSeconds, selectionDeadline: null, hostConnectedAt: now, guestConnectedAt: null,
             disconnectAt: null, disconnectedSide: null, winnerSide: null, createdAt: now, updatedAt: now,
           });
         });
@@ -240,6 +251,7 @@
       if (!created) throw new Error('room-create-failed');
       roomCode = created; roomRole = 'host'; pendingMode = null;
       state.multiplayer = { roomCode, role: roomRole };
+      createConfig.hidden = true;
       lobby.hidden = false; lobbyText(`방 코드 ${roomCode} · 상대 입장을 기다리는 중`);
       showScreen('start');
       subscribeRoom(); startHeartbeat();
@@ -247,10 +259,12 @@
     } catch (error) {
       console.error(error);
       toast('방 생성에 실패했습니다. Firebase 로그인·규칙을 확인하세요.');
-    } finally { createButton.disabled = false; }
+    } finally { createButton.disabled = false; confirmRoomCreateButton.disabled = false; }
   };
 
   const openJoin = async () => {
+    createConfig.hidden = true;
+    roomEntryForm.hidden = false;
     lobby.hidden = false;
     codeInput?.focus();
     lobbyText('방 코드 5자리를 입력하세요.');
@@ -317,7 +331,7 @@
     state.gameOver = false; state.executing = false; state.previewCard = null; state.mapTheme = room.mapTheme;
     window.resetBattleActionHistory?.();
     pendingMode = null; delete state.roomPartnerCode;
-    await updateRoom({ battleState: serializeBattle(), status: 'selecting', round: 1, turn: 0, lastFirst: 'host', selectionDeadline: Date.now() + ROUND_SELECTION_MS });
+    await updateRoom({ battleState: serializeBattle(), status: 'selecting', round: 1, turn: 0, lastFirst: 'host', selectionDeadline: Date.now() + roomSelectionSeconds(room) * 1000 });
   };
   const applyRoomBattle = (room) => {
     const battle = room.battleState;
@@ -343,7 +357,7 @@
     } catch (error) { console.error(error); toast('선택한 카드를 전송하지 못했습니다.'); }
   };
   const publishBattle = async (status = 'selecting', extra = {}) => {
-    const deadline = status === 'selecting' ? Date.now() + ROUND_SELECTION_MS : null;
+    const deadline = status === 'selecting' ? Date.now() + roomSelectionSeconds(state.multiplayerRoom) * 1000 : null;
     await updateRoom({ battleState: serializeBattle(), status, round: state.round, turn: state.turn, lastFirst: state.lastFirst === 'player' ? 'host' : 'guest', hostQueue: [], guestQueue: [], selectionDeadline: deadline, ...extra });
   };
   const showMultiplayerResult = (winner) => {
@@ -438,8 +452,9 @@
     if (room.status === 'finished') { showMultiplayerResult(room.winnerSide); return; }
     if (state.screen !== 'battle') showScreen('battle');
     renderBattle();
+    state.multiplayerRoom = room;
     if (room.status === 'selecting' && !Number(room.selectionDeadline) && roomRole === 'host' && !(room.hostQueue?.length === 3 && room.guestQueue?.length === 3)) {
-      updateRoom({ selectionDeadline: Date.now() + ROUND_SELECTION_MS }).catch(console.error);
+      updateRoom({ selectionDeadline: Date.now() + roomSelectionSeconds(room) * 1000 }).catch(console.error);
     }
     syncSelectionTimer(room);
     if (room.status === 'resolving') statusText('양쪽 카드 공개 · 행동을 진행 중입니다.');
@@ -454,7 +469,16 @@
     roomUnsubscribe = service.api.onSnapshot(service.api.doc(service.db, ROOM_COLLECTION, roomCode), onRoom, (error) => { console.error(error); toast('대전방 연결이 끊겼습니다.'); });
   };
 
-  createButton?.addEventListener('click', makeRoom);
+  createButton?.addEventListener('click', () => {
+    lobby.hidden = false;
+    createConfig.hidden = false;
+    roomEntryForm.hidden = true;
+    selectionSecondsInput.value = String(DEFAULT_SELECTION_SECONDS);
+    selectionSecondsOutput.textContent = `${DEFAULT_SELECTION_SECONDS}초`;
+    lobbyText('라운드별 카드 선택 시간을 정하세요.');
+  });
+  selectionSecondsInput?.addEventListener('input', () => { selectionSecondsOutput.textContent = `${selectionSecondsInput.value}초`; });
+  confirmRoomCreateButton?.addEventListener('click', () => makeRoom());
   openJoinButton?.addEventListener('click', openJoin);
   joinButton?.addEventListener('click', prepareJoin);
   codeInput?.addEventListener('input', () => { codeInput.value = codeInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5); });

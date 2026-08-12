@@ -28,6 +28,12 @@
 .multiplayer-lobby { width:min(100%,360px); margin-top:12px; padding:11px; border:1px solid rgba(101,229,226,.4); background:rgba(8,20,27,.83); box-shadow:6px 6px 0 rgba(101,229,226,.06); }
 .multiplayer-lobby p { display:flex; flex-wrap:wrap; gap:6px 10px; margin:0 0 9px; color:var(--muted); font-size:11px; }
 .multiplayer-lobby p b { color:var(--cyan); font:800 12px var(--display); }
+.room-create-config { display:grid; gap:8px; margin-bottom:10px; padding:10px; border:1px solid rgba(200,242,85,.35); background:rgba(200,242,85,.05); }
+.room-create-config label { display:flex; justify-content:space-between; gap:12px; color:var(--muted); font-size:11px; }
+.room-create-config output { color:var(--lime); font:800 14px/1 var(--display); }
+.room-create-config input[type="range"] { width:100%; accent-color:var(--lime); cursor:pointer; }
+.room-config-limits { display:flex; justify-content:space-between; color:var(--muted); font-size:10px; }
+.room-create-config .button { width:100%; margin-top:2px; }
 .room-entry-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:7px; }
 .room-entry-row input { min-width:0; height:38px; padding:0 10px; border:1px solid var(--line); outline:0; color:var(--ink); background:#091219; font:800 15px/1 var(--mono); letter-spacing:.13em; text-transform:uppercase; }
 .room-entry-row input:focus { border-color:var(--cyan); box-shadow:0 0 0 2px rgba(101,229,226,.13); }

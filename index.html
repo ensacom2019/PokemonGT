@@ -31,7 +31,13 @@
           </div>
           <div id="multiplayer-lobby" class="multiplayer-lobby" hidden>
             <p><b>1:1 대전</b><span id="multiplayer-lobby-status">방 코드를 입력하세요.</span></p>
-            <div class="room-entry-row"><input id="room-code-input" maxlength="5" inputmode="text" autocomplete="off" placeholder="방 코드 5자리" aria-label="방 코드" /><button id="join-room" class="button" type="button">입장</button></div>
+            <div id="room-create-config" class="room-create-config" hidden>
+              <label for="room-selection-seconds">라운드 카드 선택 시간 <output id="room-selection-seconds-output" for="room-selection-seconds">40초</output></label>
+              <input id="room-selection-seconds" type="range" min="20" max="60" step="1" value="40" />
+              <div class="room-config-limits"><span>20초</span><span>60초</span></div>
+              <button id="confirm-room-create" class="button button-primary" type="button">이 시간으로 방 생성 <span>→</span></button>
+            </div>
+            <div id="room-entry-form" class="room-entry-row"><input id="room-code-input" maxlength="5" inputmode="text" autocomplete="off" placeholder="방 코드 5자리" aria-label="방 코드" /><button id="join-room" class="button" type="button">입장</button></div>
           </div>
           <div class="rule-chips"><span>5 × 6 전장</span><span>카드 3장 큐</span><span>불타는 칸 −20</span></div>
         </div>

@@ -116,6 +116,7 @@ service cloud.firestore {
           && (resource.data.guestId == null || request.resource.data.guestId == resource.data.guestId)
           && (resource.data.hostPokemonId == null || request.resource.data.hostPokemonId == resource.data.hostPokemonId)
           && (resource.data.guestPokemonId == null || request.resource.data.guestPokemonId == resource.data.guestPokemonId)
+          && (resource.data.selectionSeconds == null || request.resource.data.selectionSeconds == resource.data.selectionSeconds)
           && request.resource.data.createdAt == resource.data.createdAt;
       }
 
@@ -134,7 +135,7 @@ service cloud.firestore {
       function validRoom() {
         return request.resource.data.keys().hasOnly([
             'hostId', 'guestId', 'hostPokemonId', 'guestPokemonId', 'hostQueue',
-            'guestQueue', 'status', 'round', 'turn', 'lastFirst', 'mapTheme', 'selectionDeadline',
+            'guestQueue', 'status', 'round', 'turn', 'lastFirst', 'mapTheme', 'selectionSeconds', 'selectionDeadline',
             'battleState', 'hostConnectedAt', 'guestConnectedAt', 'disconnectAt',
             'disconnectedSide', 'winnerSide', 'createdAt', 'updatedAt'
           ])
@@ -153,6 +154,10 @@ service cloud.firestore {
           && request.resource.data.turn >= 0
           && request.resource.data.lastFirst in ['host', 'guest']
           && request.resource.data.mapTheme is string
+          && (request.resource.data.selectionSeconds == null
+            || (request.resource.data.selectionSeconds is int
+              && request.resource.data.selectionSeconds >= 20
+              && request.resource.data.selectionSeconds <= 60))
           && (request.resource.data.selectionDeadline == null || request.resource.data.selectionDeadline is int)
           && request.resource.data.battleState is map
           && request.resource.data.hostConnectedAt is int
