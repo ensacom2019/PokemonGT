@@ -122,12 +122,19 @@
       const delta = window.getMovementDelta?.(cpu, card) || { dx: card.dx || 0, dy: card.dy || 0 };
       return { x: clamp(cpu.x + delta.dx, 0, 5), y: clamp(cpu.y + delta.dy, 0, 4) };
     };
-    const isSafeMove = (card) => {
+    const isNavigableMove = (card) => {
       if (card?.kind !== 'move') return true;
       const position = movePosition(card);
       if (position.x === cpu.x && position.y === cpu.y) return false;
       if (position.x === player.x && position.y === player.y) return false;
-      return !state.hazard?.has(`${position.x},${position.y}`);
+      return true;
+    };
+    const hasSafeMove = cards.some((card) => card.kind === 'move' && card.energy <= cpu.energy && isNavigableMove(card) && !state.hazard?.has(`${movePosition(card).x},${movePosition(card).y}`));
+    const isSafeMove = (card) => {
+      if (!isNavigableMove(card)) return false;
+      const position = movePosition(card);
+      if (!state.hazard?.has(`${position.x},${position.y}`)) return true;
+      return !hasSafeMove && cpu.hp > 21;
     };
     const preventMoveOnlyQueue = (queue) => {
       const result = [...new Set(queue.filter(Boolean))].filter((id) => isSafeMove(cards.find((card) => card.id === id))).slice(0, 3);
