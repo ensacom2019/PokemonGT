@@ -464,13 +464,13 @@ function renderHand() {
     const queued=state.queue.includes(card.id);
     const canAfford=queued||card.energy<=energyAfterQueue;
     const unavailable=state.executing||!canAfford;
-    const role=card.kind==='attack'?'湲곗닠':card.kind==='move'?'?대룞':card.kind==='guard'?'諛⑹뼱':'?뚮났';
-    const range=card.kind==='attack'?`?ш굅由?${card.range}`:card.kind==='move'?'踰붿쐞 1移?':'?먯떊';
+    const role=card.kind==='attack'?'기술':card.kind==='move'?'이동':card.kind==='guard'?'방어':'회복';
+    const range=card.kind==='attack'?`사거리 ${card.range}`:card.kind==='move'?'범위 1칸':'자신';
     const art=card.kind==='attack'?`<img class="card-character-art" src="${state.player.image}" alt="" />`:'';
-    const forecast=card.kind==='attack'&&!queued&&card.energy>state.player.energy&&energyAfterQueue>=card.energy?'<span class="energy-forecast">異⑹쟾 諛섏쁺</span>':'';
+    const forecast=card.kind==='attack'&&!queued&&card.energy>state.player.energy&&energyAfterQueue>=card.energy?'<span class="energy-forecast">충전 반영</span>':'';
     const stats=`<div class="card-stats"><span class="card-stat-line"><b>DM</b><strong>${card.kind==='attack'?String(card.damage).padStart(2,'0'):'00'}</strong></span><span class="card-stat-line"><b>EN</b><strong>${String(card.energy).padStart(2,'0')}</strong></span></div>`;
     const miniGrid=`<span class="card-mini-range ${card.kind}" aria-label="3×3 범위 표시">${miniRangeCells(card)}</span>`;
-    return `<button class="action-card ${card.kind} ${queued?'queued':''} ${state.previewCard===card.id?'previewed':''}" data-card="${card.id}" ${unavailable?'disabled':''} aria-label="${card.name}, ${card.ko}">${art}<span class="card-badge">${role}</span>${forecast}<span class="card-icon">${card.icon}</span><span class="card-name">${card.name}</span><span class="card-korean">${card.ko}</span><span class="card-range">${range} · ?곗꽑 ${card.priority}</span><div class="card-footer">${stats}${miniGrid}</div></button>`;
+    return `<button class="action-card ${card.kind} ${queued?'queued':''} ${state.previewCard===card.id?'previewed':''}" data-card="${card.id}" ${unavailable?'disabled':''} aria-label="${card.name}, ${card.ko}">${art}<span class="card-badge">${role}</span>${forecast}<span class="card-icon">${card.icon}</span><span class="card-name">${card.name}</span><span class="card-korean">${card.ko}</span><span class="card-range">${range} · 우선 ${card.priority}</span><div class="card-footer">${stats}${miniGrid}</div></button>`;
   }).join('');
   document.querySelectorAll('#card-hand [data-card]').forEach((button)=>{button.addEventListener('mouseenter',()=>setRangePreview(button.dataset.card));button.addEventListener('focus',()=>setRangePreview(button.dataset.card));button.addEventListener('click',()=>toggleCard(button.dataset.card));});
 }

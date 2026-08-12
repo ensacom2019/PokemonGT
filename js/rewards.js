@@ -328,7 +328,7 @@
     const complete = Boolean(state.rewardCardSelected && state.rewardUpgradeSelected);
     state.rewardSelected = complete ? `${state.rewardCardSelected}|${state.rewardUpgradeSelected}` : null;
     nextButton.disabled = !complete;
-    nextButton.innerHTML = complete ? '\uB2E4\uC74C \uC804\uD22C <span>??/span>' : state.rewardCardSelected ? '\uAC15\uD654 \uBCF4\uC0C1\uC744 \uC120\uD0DD\uD558\uC138\uC694' : '\uC2E0\uADDC \uCE74\uB4DC\uB97C \uC120\uD0DD\uD558\uC138\uC694';
+    nextButton.innerHTML = complete ? '\uB2E4\uC74C \uC804\uD22C <span>\u2192</span>' : state.rewardCardSelected ? '\uAC15\uD654 \uBCF4\uC0C1\uC744 \uC120\uD0DD\uD558\uC138\uC694' : '\uC2E0\uADDC \uCE74\uB4DC\uB97C \uC120\uD0DD\uD558\uC138\uC694';
     if (!complete || state.rewardHistoryAdded) return;
     const card = state.rewardCardOffers.find((reward) => reward.id === state.rewardCardSelected);
     const upgrade = state.rewardUpgradeOffers.find((reward) => reward.id === state.rewardUpgradeSelected);
