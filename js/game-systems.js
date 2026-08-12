@@ -58,6 +58,10 @@
     if (passive?.trigger === 'attack-discount' && card?.kind === 'attack') actionCard = { ...card, energy: Math.max(0, card.energy - 3) };
 
     resolveActionOriginal?.(fighter, actionCard);
+    if (fighter.side === 'cpu' && actionCard?.kind === 'move' && (fighter.x !== before.x || fighter.y !== before.y)) {
+      const recent = fighter.aiRecentCells || [];
+      fighter.aiRecentCells = [...recent, `${fighter.x},${fighter.y}`].slice(-4);
+    }
     if (fighter.hp <= 0 || before.energy === fighter.energy && actionCard?.energy > before.energy) return;
 
     if (passive?.trigger === 'guard-energy' && actionCard?.kind === 'guard' && fighter.guarding) fighter.energy = cap(fighter, 'energy', 10);
@@ -81,6 +85,7 @@
     if (!state.cpu) return;
     state.cpu.aiPersonality = PERSONALITIES[Math.floor(Math.random() * PERSONALITIES.length)];
     state.cpu.movementProfile = MOVEMENT_PROFILES[state.cpu.baseId || state.cpu.id] || 'balanced';
+    state.cpu.aiRecentCells = [`${state.cpu.x},${state.cpu.y}`];
   };
   const startBattleOriginal = window.startBattle;
   window.startBattle = (...args) => { const result = startBattleOriginal?.(...args); assignPersonality(); return result; };
@@ -113,9 +118,20 @@
     const base = chooseCpuQueueOriginal?.() || [];
     if (!cpu || !player) return base;
     const cards = getHand(cpu) || [];
+    const movePosition = (card) => {
+      const delta = window.getMovementDelta?.(cpu, card) || { dx: card.dx || 0, dy: card.dy || 0 };
+      return { x: clamp(cpu.x + delta.dx, 0, 5), y: clamp(cpu.y + delta.dy, 0, 4) };
+    };
+    const isSafeMove = (card) => {
+      if (card?.kind !== 'move') return true;
+      const position = movePosition(card);
+      if (position.x === cpu.x && position.y === cpu.y) return false;
+      if (position.x === player.x && position.y === player.y) return false;
+      return !state.hazard?.has(`${position.x},${position.y}`);
+    };
     const preventMoveOnlyQueue = (queue) => {
-      const result = [...new Set(queue.filter(Boolean))].slice(0, 3);
-      const fillPool = [...cards.filter((card) => card.kind === 'attack' && card.energy <= cpu.energy && attackPatternContains(cpu, player, card)), ...cards.filter((card) => card.energy <= cpu.energy)];
+      const result = [...new Set(queue.filter(Boolean))].filter((id) => isSafeMove(cards.find((card) => card.id === id))).slice(0, 3);
+      const fillPool = [...cards.filter((card) => card.kind === 'attack' && card.energy <= cpu.energy && attackPatternContains(cpu, player, card)), ...cards.filter((card) => card.kind !== 'move' && card.energy <= cpu.energy), ...cards.filter((card) => card.kind === 'move' && card.energy <= cpu.energy && isSafeMove(card))];
       for (const card of fillPool) {
         if (result.length >= 3) break;
         if (!result.includes(card.id)) result.push(card.id);
@@ -133,7 +149,7 @@
     const attacks = affordable.filter((card) => card.kind === 'attack' && attackPatternContains(cpu, player, card)).sort((a, b) => b.damage - a.damage || b.priority - a.priority);
     const guard = affordable.find((card) => card.kind === 'guard');
     const energy = affordable.find((card) => card.kind === 'energy');
-    const moves = affordable.filter((card) => card.kind === 'move');
+    const moves = affordable.filter((card) => card.kind === 'move' && isSafeMove(card));
     const move = moves.find((card) => card.id === 'back2') || moves[0];
     const openingCard = state.queue[0] ? cardById(state.queue[0]) : null;
     const predictedPlayer = { ...player };
@@ -143,22 +159,24 @@
       predictedPlayer.y = clamp(player.y + delta.dy, 0, 4);
     }
     const predictedAttacks = affordable.filter((card) => card.kind === 'attack' && attackPatternContains(cpu, predictedPlayer, card)).sort((a, b) => b.damage - a.damage || b.priority - a.priority);
-    const movePosition = (card) => {
-      const delta = window.getMovementDelta?.(cpu, card) || { dx: card.dx || 0, dy: card.dy || 0 };
-      return { x: clamp(cpu.x + delta.dx, 0, 5), y: clamp(cpu.y + delta.dy, 0, 4) };
-    };
     const openingThreat = openingCard?.kind === 'attack' && attackPatternContains(player, cpu, openingCard);
     const escapeMove = moves.find((card) => {
       const position = movePosition(card);
       return (position.x !== cpu.x || position.y !== cpu.y) && (openingCard?.kind !== 'attack' || !attackPatternContains(player, { ...cpu, ...position }, openingCard));
     });
-    const closeMove = [...moves].sort((left, right) => {
-      const a = movePosition(left); const b = movePosition(right);
-      return Math.abs(a.x - predictedPlayer.x) + Math.abs(a.y - predictedPlayer.y) - (Math.abs(b.x - predictedPlayer.x) + Math.abs(b.y - predictedPlayer.y));
-    }).find((card) => {
-      const position = movePosition(card);
-      return !state.hazard?.has(`${position.x},${position.y}`);
-    });
+    const recentCells = cpu.aiRecentCells || [];
+    const tacticalMove = [...moves].sort((left, right) => {
+      const scoreMove = (card) => {
+        const position = movePosition(card);
+        const distance = Math.abs(position.x - predictedPlayer.x) + Math.abs(position.y - predictedPlayer.y);
+        const canAttackAfterMove = affordable.some((attack) => attack.kind === 'attack' && attackPatternContains({ ...cpu, ...position }, predictedPlayer, attack));
+        const hasItem = state.fieldItems?.some((item) => item.x === position.x && item.y === position.y);
+        const revisits = recentCells.filter((cell) => cell === `${position.x},${position.y}`).length;
+        return (canAttackAfterMove ? 90 : 0) + (hasItem ? 28 : 0) - distance * 8 - revisits * 35;
+      };
+      return scoreMove(right) - scoreMove(left);
+    })[0];
+    const closeMove = tacticalMove;
     const itemMove = moves.find((card) => {
       const position = movePosition(card);
       return state.fieldItems?.some((item) => item.x === position.x && item.y === position.y);
