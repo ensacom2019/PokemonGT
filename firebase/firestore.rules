@@ -114,7 +114,7 @@ service cloud.firestore {
       function immutableRoomIdentity() {
         return request.resource.data.hostId == resource.data.hostId
           && (resource.data.guestId == null || request.resource.data.guestId == resource.data.guestId)
-          && request.resource.data.hostPokemonId == resource.data.hostPokemonId
+          && (resource.data.hostPokemonId == null || request.resource.data.hostPokemonId == resource.data.hostPokemonId)
           && (resource.data.guestPokemonId == null || request.resource.data.guestPokemonId == resource.data.guestPokemonId)
           && request.resource.data.createdAt == resource.data.createdAt;
       }
@@ -123,7 +123,7 @@ service cloud.firestore {
         return isHost()
           || (isGuest()
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-              'guestQueue', 'guestConnectedAt', 'updatedAt'
+              'guestPokemonId', 'guestQueue', 'guestConnectedAt', 'updatedAt'
             ]))
           || (isJoiningGuest()
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
@@ -140,13 +140,13 @@ service cloud.firestore {
           ])
           && request.resource.data.hostId is string
           && (request.resource.data.guestId == null || request.resource.data.guestId is string)
-          && request.resource.data.hostPokemonId is string
+          && (request.resource.data.hostPokemonId == null || request.resource.data.hostPokemonId is string)
           && (request.resource.data.guestPokemonId == null || request.resource.data.guestPokemonId is string)
           && request.resource.data.hostQueue is list
           && request.resource.data.hostQueue.size() <= 3
           && request.resource.data.guestQueue is list
           && request.resource.data.guestQueue.size() <= 3
-          && request.resource.data.status in ['waiting', 'selecting', 'resolving', 'finished']
+          && request.resource.data.status in ['waiting', 'partner-select', 'selecting', 'resolving', 'finished']
           && request.resource.data.round is int
           && request.resource.data.round >= 1
           && request.resource.data.turn is int

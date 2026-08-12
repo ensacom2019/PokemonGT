@@ -76,6 +76,7 @@
     roomUnsubscribe?.(); roomUnsubscribe = null;
     clearInterval(heartbeatTimer); heartbeatTimer = null;
     roomCode = null; roomRole = null; pendingMode = null; resolving = false; applyingSnapshot = false;
+    delete state.roomPartnerCode;
     delete state.multiplayer;
     statusText('');
   };
@@ -103,31 +104,43 @@
     heartbeatTimer = setInterval(heartbeat, HEARTBEAT_MS);
     heartbeat();
   };
-  const showSelectForMode = (mode, code = '') => {
-    pendingMode = mode;
-    roomCode = code || null;
-    roomRole = null;
-    renderRoster(); state.selected = null;
-    $('#selection-status').textContent = mode === 'host' ? '파트너를 고른 뒤 방을 만드세요.' : `방 ${code}에 출전할 파트너를 고르세요.`;
+  const showPartnerSelect = (room) => {
+    const ownPokemonId = room[ownPokemonKey()];
+    pendingMode = 'partner';
+    if (state.screen !== 'select' || state.roomPartnerCode !== roomCode) {
+      renderRoster(); state.selected = null; state.roomPartnerCode = roomCode;
+      showScreen('select');
+    }
     const confirm = $('#confirm-selection');
+    if (ownPokemonId) {
+      state.selected = ownPokemonId;
+      document.querySelectorAll('[data-pokemon]').forEach((button) => {
+        const selected = button.dataset.pokemon === ownPokemonId;
+        button.classList.toggle('selected', selected);
+        button.setAttribute('aria-pressed', String(selected));
+      });
+      const pokemon = pokemonById(ownPokemonId);
+      $('#selection-status').textContent = `${pokemon?.name || '파트너'} 선택 완료 · 상대를 기다리는 중입니다.`;
+      confirm.disabled = true;
+      confirm.innerHTML = '파트너 선택 완료';
+      return;
+    }
+    state.selected = null;
+    $('#selection-status').textContent = '상대와 연결되었습니다. 출전할 파트너를 선택하세요.';
     confirm.disabled = true;
-    confirm.innerHTML = mode === 'host' ? '방 생성 <span>→</span>' : '대전 입장 <span>→</span>';
-    showScreen('select');
+    confirm.innerHTML = '파트너 확정 <span>→</span>';
   };
   const interceptSelectConfirm = (event) => {
     if (!pendingMode) return;
     event.preventDefault();
     event.stopImmediatePropagation();
     event.stopPropagation();
-    pendingMode === 'host' ? makeRoom() : joinRoom();
+    if (pendingMode === 'partner') selectRoomPartner();
   };
 
   const makeRoom = async () => {
-    if (!state.selected) return;
     const service = await ensureSignedIn();
     const user = service.getUser();
-    const host = pokemonById(state.selected);
-    if (!host) return;
     createButton.disabled = true;
     try {
       let created = null;
@@ -139,7 +152,7 @@
           const existing = await transaction.get(ref);
           if (existing.exists()) throw new Error('room-code-collision');
           transaction.set(ref, {
-            hostId: user.uid, guestId: null, hostPokemonId: host.id, guestPokemonId: null,
+            hostId: user.uid, guestId: null, hostPokemonId: null, guestPokemonId: null,
             hostQueue: [], guestQueue: [], status: 'waiting', round: 1, turn: 0,
             lastFirst: 'host', mapTheme: ['grassland', 'forest', 'lake'][Math.floor(Math.random() * 3)],
             battleState: {}, hostConnectedAt: now, guestConnectedAt: null,
@@ -174,31 +187,46 @@
       const snapshot = await service.api.getDoc(service.api.doc(service.db, ROOM_COLLECTION, code));
       if (!snapshot.exists() || snapshot.data().status !== 'waiting' || snapshot.data().guestId) { lobbyText('입장 가능한 방이 없습니다.'); return; }
       if (snapshot.data().hostId === service.getUser()?.uid) { lobbyText('내가 만든 방에는 입장할 수 없습니다.'); return; }
-      showSelectForMode('guest', code);
+      joinRoom(code);
     } catch (error) {
       console.error(error); lobbyText('방을 확인하지 못했습니다. Firebase 연결을 확인하세요.');
     }
   };
-  const joinRoom = async () => {
-    if (!state.selected || !roomCode) return;
+  const joinRoom = async (code) => {
     const service = await ensureSignedIn();
     const user = service.getUser();
-    const guest = pokemonById(state.selected);
     try {
-      const ref = service.api.doc(service.db, ROOM_COLLECTION, roomCode);
+      const ref = service.api.doc(service.db, ROOM_COLLECTION, code);
       await service.api.runTransaction(service.db, async (transaction) => {
         const snapshot = await transaction.get(ref);
         if (!snapshot.exists()) throw new Error('room-not-found');
         const room = snapshot.data();
         if (room.status !== 'waiting' || room.guestId) throw new Error('room-unavailable');
-        transaction.update(ref, { guestId: user.uid, guestPokemonId: guest.id, guestQueue: [], status: 'selecting', guestConnectedAt: Date.now(), updatedAt: Date.now() });
+        transaction.update(ref, { guestId: user.uid, guestQueue: [], status: 'partner-select', guestConnectedAt: Date.now(), updatedAt: Date.now() });
       });
-      roomRole = 'guest'; pendingMode = null;
+      roomCode = code; roomRole = 'guest'; pendingMode = null;
       state.multiplayer = { roomCode, role: roomRole };
       subscribeRoom(); startHeartbeat();
-      statusText(`방 ${roomCode} · 전장을 준비하고 있습니다.`);
+      statusText(`방 ${roomCode} · 상대와 연결되었습니다. 파트너를 선택하세요.`);
     } catch (error) {
       console.error(error); toast(error.message === 'room-unavailable' ? '방이 이미 시작되었거나 가득 찼습니다.' : '대전 입장에 실패했습니다.');
+    }
+  };
+
+  const selectRoomPartner = async () => {
+    if (!state.selected || !isMulti()) return;
+    const pokemon = pokemonById(state.selected);
+    if (!pokemon) return;
+    const confirm = $('#confirm-selection');
+    confirm.disabled = true;
+    try {
+      await updateRoom({ [ownPokemonKey()]: pokemon.id, [`${ownKey()}ConnectedAt`]: Date.now() });
+      $('#selection-status').textContent = `${pokemon.name} 선택 완료 · 상대를 기다리는 중입니다.`;
+      confirm.innerHTML = '파트너 선택 완료';
+    } catch (error) {
+      console.error(error);
+      confirm.disabled = false;
+      toast('파트너 선택을 전송하지 못했습니다.');
     }
   };
 
@@ -212,6 +240,7 @@
     state.nextFieldItemRound = 5 + Math.floor(Math.random() * 4); state.queue = []; state.cpuQueue = [];
     state.gameOver = false; state.executing = false; state.previewCard = null; state.mapTheme = room.mapTheme;
     window.resetBattleActionHistory?.();
+    pendingMode = null; delete state.roomPartnerCode;
     await updateRoom({ battleState: serializeBattle(), status: 'selecting', round: 1, turn: 0, lastFirst: 'host' });
   };
   const applyRoomBattle = (room) => {
@@ -317,6 +346,11 @@
     if (!snapshot.exists() || !isMulti()) { toast('대전방을 찾을 수 없습니다.'); leaveRoom(); showScreen('start'); return; }
     const room = snapshot.data();
     if (room.status === 'waiting') { lobby.hidden = false; lobbyText(`방 코드 ${roomCode} · 상대 입장을 기다리는 중`); return; }
+    if (room.status === 'partner-select') {
+      showPartnerSelect(room);
+      if (roomRole === 'host' && room.hostPokemonId && room.guestPokemonId) await hostInitializeBattle(room);
+      return;
+    }
     if (roomRole === 'host' && room.status === 'selecting' && (!room.battleState?.host || !room.battleState?.guest)) {
       await hostInitializeBattle(room); return;
     }
@@ -339,7 +373,7 @@
     roomUnsubscribe = service.api.onSnapshot(service.api.doc(service.db, ROOM_COLLECTION, roomCode), onRoom, (error) => { console.error(error); toast('대전방 연결이 끊겼습니다.'); });
   };
 
-  createButton?.addEventListener('click', () => showSelectForMode('host'));
+  createButton?.addEventListener('click', makeRoom);
   openJoinButton?.addEventListener('click', openJoin);
   joinButton?.addEventListener('click', prepareJoin);
   codeInput?.addEventListener('input', () => { codeInput.value = codeInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5); });
