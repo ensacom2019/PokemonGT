@@ -23,7 +23,11 @@
   state.playerMaxEnergy = state.playerMaxEnergy || 100;
   state.pendingRecovery = null;
   state.rewardOffers = [];
+  state.rewardCardOffers = [];
+  state.rewardUpgradeOffers = [];
   state.rewardSelected = null;
+  state.rewardCardSelected = null;
+  state.rewardUpgradeSelected = null;
   state.stage = state.stage || 1;
   state.highestStage = state.highestStage || state.stage || 1;
   state.pendingStageAdvance = false;
@@ -116,6 +120,7 @@
 
   const rewardPanel = document.querySelector('#reward-panel');
   const rewardOptions = document.querySelector('#reward-options');
+  const rewardUpgradeOptions = document.querySelector('#reward-upgrade-options');
   const nextButton = document.querySelector('#next-battle');
   const enemyRewardList = document.querySelector('#enemy-reward-list');
 
@@ -193,7 +198,12 @@
     state.playerMaxEnergy = 100;
     state.pendingRecovery = null;
     state.rewardOffers = [];
+    state.rewardCardOffers = [];
+    state.rewardUpgradeOffers = [];
     state.rewardSelected = null;
+    state.rewardCardSelected = null;
+    state.rewardUpgradeSelected = null;
+    state.rewardHistoryAdded = false;
     state.stage = 1;
     state.highestStage = 1;
     state.pendingStageAdvance = false;
@@ -250,7 +260,7 @@
     writeLog(message, 'evolution');
   };
 
-  const showReward = () => {
+  const showRewardLegacy = () => {
     const fighter = state.player;
     if (!fighter || !rewardPanel || !rewardOptions) return;
     const maxHp = fighter.maxHp || state.playerMaxHp || 100;
@@ -283,6 +293,86 @@
     rewardOptions.querySelectorAll('[data-reward]').forEach((button) => button.addEventListener('click', () => selectReward(button.dataset.reward)));
     rewardPanel.hidden = false;
     if (nextButton) { nextButton.disabled = true; nextButton.innerHTML = '\uCE74\uB4DC\uB97C \uC120\uD0DD\uD558\uC138\uC694'; }
+  };
+
+  const renderRewardCard = (reward, type) => {
+    const role = reward.kind === 'attack' ? '\uACF5\uACA9' : reward.kind === 'move' ? '\uC774\uB3D9' : reward.kind === 'card-upgrade' ? '\uCE74\uB4DC \uAC15\uD654' : '\uC2A4\uD0EF \uAC15\uD654';
+    const stat = reward.kind === 'attack' ? `\uD53C\uD574 ${reward.damage} \u00B7 \uC758\uC695 ${reward.energy} \u00B7 \uC0AC\uAC70\uB9AC ${reward.range} \u00B7 \uC6B0\uC120 ${reward.priority}` : reward.ko;
+    const range = ['attack', 'move'].includes(reward.kind) ? `<span class="reward-mini-range card-mini-range ${reward.kind}" aria-label="3\u00D73 \uAE30\uC220 \uBC94\uC704 \uD45C\uC2DC">${miniRangeCells(reward)}</span>` : '';
+    return `<button type="button" class="reward-card ${reward.kind}" data-reward-type="${type}" data-reward="${reward.id}"><span class="card-badge">${role}</span><span class="card-icon">${reward.icon}</span><strong>${reward.name}</strong><div class="reward-card-footer"><small>${stat}</small>${range}</div></button>`;
+  };
+
+  const applyDualUpgrade = (reward) => {
+    if (reward.kind === 'card-upgrade') {
+      const enhanced = state.cardEnhancements[reward.targetCardId] || { level: 0, damage: 0, energyReduction: 0, priority: 0 };
+      state.cardEnhancements[reward.targetCardId] = { ...enhanced, level: enhanced.level + 1, damage: enhanced.damage + 6, energyReduction: enhanced.energyReduction + 2 };
+      return;
+    }
+    const amount = reward.amount || 10;
+    const maxKey = reward.upgrade === 'maxHp' ? 'maxHp' : 'maxEnergy';
+    const currentKey = reward.upgrade === 'maxHp' ? 'hp' : 'energy';
+    const stateMaxKey = reward.upgrade === 'maxHp' ? 'playerMaxHp' : 'playerMaxEnergy';
+    state[stateMaxKey] = (state[stateMaxKey] || 100) + amount;
+    if (state.player) {
+      state.player[maxKey] = state[stateMaxKey];
+      state.player[currentKey] = Math.min(state.player[maxKey], state.player[currentKey] + amount);
+    }
+    if (state.pendingRecovery) {
+      state.pendingRecovery[maxKey] = state[stateMaxKey];
+      state.pendingRecovery[currentKey] = Math.min(state[stateMaxKey], state.pendingRecovery[currentKey] + amount);
+    }
+  };
+
+  const updateDualRewardContinue = () => {
+    if (!nextButton) return;
+    const complete = Boolean(state.rewardCardSelected && state.rewardUpgradeSelected);
+    state.rewardSelected = complete ? `${state.rewardCardSelected}|${state.rewardUpgradeSelected}` : null;
+    nextButton.disabled = !complete;
+    nextButton.innerHTML = complete ? '\uB2E4\uC74C \uC804\uD22C <span>??/span>' : state.rewardCardSelected ? '\uAC15\uD654 \uBCF4\uC0C1\uC744 \uC120\uD0DD\uD558\uC138\uC694' : '\uC2E0\uADDC \uCE74\uB4DC\uB97C \uC120\uD0DD\uD558\uC138\uC694';
+    if (!complete || state.rewardHistoryAdded) return;
+    const card = state.rewardCardOffers.find((reward) => reward.id === state.rewardCardSelected);
+    const upgrade = state.rewardUpgradeOffers.find((reward) => reward.id === state.rewardUpgradeSelected);
+    state.stageRewardHistory.push({ stage: state.stage || 1, name: `${card?.name || ''} / ${upgrade?.name || ''}` });
+    state.rewardHistoryAdded = true;
+    renderStageRewards();
+  };
+
+  const selectDualReward = (type, id) => {
+    const isCard = type === 'card';
+    if ((isCard && state.rewardCardSelected) || (!isCard && state.rewardUpgradeSelected)) return;
+    const offers = isCard ? state.rewardCardOffers : state.rewardUpgradeOffers;
+    const reward = offers.find((candidate) => candidate.id === id);
+    if (!reward) return;
+    if (isCard) {
+      state.rewardCardSelected = reward.id;
+      state.playerBonusCards.push({ ...reward });
+    } else {
+      state.rewardUpgradeSelected = reward.id;
+      applyDualUpgrade(reward);
+    }
+    document.querySelectorAll(`[data-reward-type="${type}"]`).forEach((button) => button.classList.toggle('selected', button.dataset.reward === id));
+    updateDualRewardContinue();
+    writeLog(isCard ? `${reward.name} \uCE74\uB4DC\uB97C \uD68D\uB4DD\uD588\uC2B5\uB2C8\uB2E4.` : `${reward.name} \uAC15\uD654\uB97C \uD68D\uB4DD\uD588\uC2B5\uB2C8\uB2E4.`, 'evolution');
+  };
+
+  const showReward = () => {
+    const fighter = state.player;
+    if (!fighter || !rewardPanel || !rewardOptions || !rewardUpgradeOptions) return;
+    const maxHp = fighter.maxHp || state.playerMaxHp || 100;
+    const maxEnergy = fighter.maxEnergy || state.playerMaxEnergy || 100;
+    state.pendingRecovery = { hp: clamp(fighter.hp + 40, 0, maxHp), energy: clamp(fighter.energy + 40, 0, maxEnergy), maxHp, maxEnergy };
+    state.pendingStageAdvance = true;
+    const upgradeOffers = shuffle((getHand(fighter) || []).filter((card) => card.kind === 'attack').map((card) => ({ id: `card-upgrade:${card.id}`, targetCardId: card.id, name: `${card.name} \uAC15\uD654`, ko: `\uD53C\uD574 +6 \u00B7 \uC758\uC695 -2 (${card.name})`, icon: '\u2726', kind: 'card-upgrade' }))).slice(0, 4);
+    state.rewardCardOffers = shuffle(REWARD_POOL.filter((card) => ['move', 'attack'].includes(card.kind) && !ownedIds().has(card.id))).slice(0, 3);
+    state.rewardUpgradeOffers = shuffle([...REWARD_POOL.filter((card) => card.kind === 'upgrade'), ...upgradeOffers]).slice(0, 3);
+    state.rewardCardSelected = null;
+    state.rewardUpgradeSelected = null;
+    state.rewardHistoryAdded = false;
+    rewardOptions.innerHTML = state.rewardCardOffers.map((reward) => renderRewardCard(reward, 'card')).join('');
+    rewardUpgradeOptions.innerHTML = state.rewardUpgradeOffers.map((reward) => renderRewardCard(reward, 'upgrade')).join('');
+    document.querySelectorAll('[data-reward-type]').forEach((button) => button.addEventListener('click', () => selectDualReward(button.dataset.rewardType, button.dataset.reward)));
+    rewardPanel.hidden = false;
+    updateDualRewardContinue();
   };
 
   const originalFinishBattle = window.finishBattle;

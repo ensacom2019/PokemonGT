@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#10141f" />
     <title>포켓몬 // 그리드 배틀</title>
     <link rel="stylesheet" href="css/styles.css?v=8" />
-    <link rel="stylesheet" href="css/backgrounds.css?v=37" />
+    <link rel="stylesheet" href="css/backgrounds.css?v=38" />
   </head>
   <body>
     <div class="scanlines" aria-hidden="true"></div>
@@ -97,8 +97,9 @@
           <ol id="result-ranking-list" class="ranking-list"></ol>
         </section>
         <div id="reward-panel" class="reward-panel" hidden>
-          <div class="reward-heading"><span>승리 보상</span><strong>새 보상 3개 중 1개 선택</strong><small>다음 전투는 현재 체력과 의욕에 각각 +40만 회복됩니다.</small></div>
-          <div id="reward-options" class="reward-options"></div>
+          <div class="reward-heading"><span>승리 보상 2개</span><strong>신규 카드와 강화 보상을 각각 선택하세요</strong><small>다음 전투는 현재 체력과 의욕에 각각 +40만 회복됩니다.</small></div>
+          <section class="reward-section"><h3>01 · 신규 카드 3개 중 1개 선택</h3><div id="reward-options" class="reward-options"></div></section>
+          <section class="reward-section"><h3>02 · 스탯·공격 카드 강화 3개 중 1개 선택</h3><div id="reward-upgrade-options" class="reward-options"></div></section>
         </div>
         <section id="stage-event-panel" class="stage-event-panel" hidden aria-live="polite">
           <div class="event-heading"><span>전투 이벤트</span><strong id="stage-event-title">낯선 갈림길</strong><small id="stage-event-copy">다음 전투를 앞두고 선택의 시간이 찾아왔습니다.</small></div>
@@ -116,7 +117,7 @@
     <script src="js/gen4.js?v=3"></script>
     <script src="js/title-fixes.js?v=3"></script>
     <script src="js/score.js?v=2"></script>
-    <script src="js/rewards.js?v=17"></script>
+    <script src="js/rewards.js?v=18"></script>
     <script src="js/game-systems.js?v=7"></script>
     <script src="js/battle-items.js?v=1"></script>
     <script src="js/ranking-firebase.js?v=5"></script>
