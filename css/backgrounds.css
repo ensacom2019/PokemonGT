@@ -22,7 +22,7 @@
 .battle-grid .grid-cell { z-index:1; }
 
 /* Title-screen type advantage loop: grass > water > fire > grass. */
-.type-cycle { width:min(100%,300px); margin-top:30px; padding:12px 13px 9px; border:1px solid rgba(101,229,226,.38); background:linear-gradient(135deg,rgba(101,229,226,.12),rgba(10,18,25,.72) 55%); box-shadow:7px 7px 0 rgba(101,229,226,.06); }
+.type-cycle { position:absolute; z-index:4; top:34px; left:18px; width:min(44%,300px); padding:12px 13px 9px; border:1px solid rgba(101,229,226,.38); background:linear-gradient(135deg,rgba(101,229,226,.12),rgba(10,18,25,.84) 55%); box-shadow:7px 7px 0 rgba(101,229,226,.06); }
 .type-cycle-title { display:flex; justify-content:space-between; gap:8px; margin:0; color:var(--cyan); font:800 12px/1 var(--display); letter-spacing:.08em; }
 .type-cycle-title b { color:var(--amber); font:700 10px/1 var(--mono); letter-spacing:0; white-space:nowrap; }
 .type-cycle-map { position:relative; height:151px; margin-top:5px; }
@@ -58,7 +58,10 @@
   .pokemon-card .card-emoji { height:82px; }
   .hero-pokemon { width:112px; height:112px; }
   .hero-pokemon .pokemon-emoji { width:165%; height:165%; }
-  .type-cycle { width:min(100%,280px); margin-top:24px; }
+  .type-cycle { top:14px; left:12px; width:min(48%,240px); padding:9px 10px 6px; }
+  .type-cycle-map { height:122px; transform:scale(.83); transform-origin:top left; width:120%; margin-bottom:-20px; }
+  .type-cycle-title { font-size:11px; }
+  .type-cycle-title b { font-size:9px; }
 }
 @media (max-width:700px) { .reward-options { grid-template-columns:1fr; } .reward-heading strong { font-size:20px; } }
 
