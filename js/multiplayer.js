@@ -108,6 +108,10 @@
     delete state.multiplayerReady;
     delete state.multiplayerEnemyReady;
     setWaitingHostUi(false);
+    lobby.hidden = true;
+    createConfig.hidden = true;
+    roomEntryForm.hidden = true;
+    lobbyText('방 코드를 입력하세요.');
     statusText('');
   };
   const apiReady = async () => {
@@ -272,7 +276,7 @@
       state.multiplayer = { roomCode, role: roomRole };
       createConfig.hidden = true;
       setWaitingHostUi(true);
-      lobby.hidden = false; lobbyText(`방 코드 ${roomCode} · 상대 입장을 기다리는 중`);
+      lobby.hidden = true; lobbyText(`방 코드 ${roomCode} · 상대 입장을 기다리는 중`);
       showScreen('start');
       subscribeRoom(); startHeartbeat();
       toast(`방 ${roomCode}가 생성되었습니다.`);
@@ -468,7 +472,7 @@
   const onRoom = async (snapshot) => {
     if (!snapshot.exists() || !isMulti()) { toast('대전방을 찾을 수 없습니다.'); leaveRoom(); showScreen('start'); return; }
     const room = snapshot.data();
-    if (room.status === 'waiting') { setWaitingHostUi(roomRole === 'host'); lobby.hidden = false; lobbyText(`방 코드 ${roomCode} · 상대 입장을 기다리는 중`); return; }
+    if (room.status === 'waiting') { setWaitingHostUi(roomRole === 'host'); lobby.hidden = roomRole === 'host'; lobbyText(`방 코드 ${roomCode} · 상대 입장을 기다리는 중`); return; }
     setWaitingHostUi(false);
     if (room.status === 'partner-select') {
       showPartnerSelect(room);
