@@ -33,7 +33,7 @@
 .type-node.fire { bottom:11px; left:9px; color:#3a1713; background:#ff8a65; }
 .type-arrow { position:absolute; color:#f4eee0; font:900 37px/.8 var(--display); text-shadow:2px 2px 0 #15212b; }
 .arrow-grass { top:49px; right:47px; color:#79e66d; } /* 풀 → 물 */
-.arrow-water { bottom:37px; left:50%; transform:translateX(-50%); color:#66dff5; } /* 물 → 불 */
+.arrow-water { bottom:11px; left:50%; transform:translate(-50%,-4px); color:#66dff5; } /* 물 → 불 */
 .arrow-fire { top:49px; left:47px; color:#ff735e; } /* 불 → 풀 */
 
 /* Pixel-era monster-battle title treatment and larger sprite presentation. */
