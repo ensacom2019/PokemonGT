@@ -60,6 +60,12 @@
   const roomCodeFor = () => Array.from({ length: 5 }, () => ROOM_ALPHABET[Math.floor(Math.random() * ROOM_ALPHABET.length)]).join('');
   const clone = (value) => JSON.parse(JSON.stringify(value));
   const cleanCard = (card) => ({ id: card.id, name: card.name, ko: card.ko, icon: card.icon, kind: card.kind, priority: card.priority, energy: card.energy, label: card.label, damage: card.damage ?? null, range: card.range ?? null, restore: card.restore ?? null, dx: card.dx ?? null, dy: card.dy ?? null, relative: card.relative ?? null, pattern: card.pattern ?? null });
+  // 참가자의 전장은 방장 전장을 좌우 반전해 보여 준다. 공격 패턴은 fighter.side가
+  // cpu일 때 이미 반전되지만, 이동 dx는 카드에 직접 들어 있으므로 방장 판정 전에만 뒤집는다.
+  const cardForHostResolution = (fighter, card) => {
+    if (!card || fighter?.side !== 'cpu' || card.kind !== 'move') return card;
+    return { ...card, dx: -Number(card.dx || 0) };
+  };
   const cleanFighter = (fighter) => {
     if (!fighter) return null;
     return {
@@ -422,8 +428,8 @@
     const actions = [];
     for (let slot = 0; slot < 3; slot += 1) {
       const pair = [
-        { fighter: state.player, card: cardById(state.queue[slot]) },
-        { fighter: state.cpu, card: cardById(state.cpuQueue[slot]) },
+        { fighter: state.player, card: cardForHostResolution(state.player, cardById(state.queue[slot])) },
+        { fighter: state.cpu, card: cardForHostResolution(state.cpu, cardById(state.cpuQueue[slot])) },
       ];
       pair.sort(compareActions); actions.push(...pair);
     }
