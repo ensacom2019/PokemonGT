@@ -21,6 +21,22 @@
 
 .battle-grid .grid-cell { z-index:1; }
 
+/* Private room multiplayer entry and in-battle connection state. */
+.title-action-row { display:flex; flex-wrap:wrap; gap:9px; align-items:center; }
+.button-room { color:var(--cyan); border-color:rgba(101,229,226,.56); background:rgba(101,229,226,.07); }
+.button-room:hover:not(:disabled) { color:#07181d; border-color:var(--cyan); background:var(--cyan); }
+.multiplayer-lobby { width:min(100%,360px); margin-top:12px; padding:11px; border:1px solid rgba(101,229,226,.4); background:rgba(8,20,27,.83); box-shadow:6px 6px 0 rgba(101,229,226,.06); }
+.multiplayer-lobby p { display:flex; flex-wrap:wrap; gap:6px 10px; margin:0 0 9px; color:var(--muted); font-size:11px; }
+.multiplayer-lobby p b { color:var(--cyan); font:800 12px var(--display); }
+.room-entry-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:7px; }
+.room-entry-row input { min-width:0; height:38px; padding:0 10px; border:1px solid var(--line); outline:0; color:var(--ink); background:#091219; font:800 15px/1 var(--mono); letter-spacing:.13em; text-transform:uppercase; }
+.room-entry-row input:focus { border-color:var(--cyan); box-shadow:0 0 0 2px rgba(101,229,226,.13); }
+.room-entry-row .button { padding:10px 13px; color:var(--ink); border-color:var(--cyan); }
+.multiplayer-status { width:min(100%,720px); margin:-7px auto 14px; padding:10px 13px; border:1px solid rgba(101,229,226,.5); color:var(--cyan); background:linear-gradient(90deg,rgba(101,229,226,.13),rgba(8,18,25,.72)); font-size:11px; text-align:center; }
+.multiplayer-status b { color:var(--lime); margin-right:8px; }
+.multiplayer-status.is-warning { color:var(--amber); border-color:rgba(255,189,98,.65); }
+.multiplayer-status.is-error { color:#ff9289; border-color:rgba(255,105,94,.65); }
+
 /* Title-screen type advantage loop: grass > water > fire > grass. */
 .type-cycle { position:absolute; z-index:5; top:20px; left:18px; width:min(44%,300px); padding:12px 13px 9px; border:1px solid rgba(101,229,226,.38); background:linear-gradient(135deg,rgba(101,229,226,.12),rgba(10,18,25,.94) 55%); box-shadow:7px 7px 0 rgba(101,229,226,.06); }
 .type-cycle-title { display:flex; justify-content:space-between; gap:8px; margin:0; color:var(--cyan); font:800 12px/1 var(--display); letter-spacing:.08em; }
@@ -62,6 +78,9 @@
   .type-cycle-map { height:122px; transform:scale(.83); transform-origin:top left; width:120%; margin-bottom:-20px; }
   .type-cycle-title { font-size:11px; }
   .type-cycle-title b { font-size:9px; }
+  .title-action-row { display:grid; grid-template-columns:1fr 1fr; }
+  .title-action-row .button-primary { grid-column:1 / -1; }
+  .title-action-row .button { width:100%; }
 }
 @media (max-width:700px) { .reward-options { grid-template-columns:1fr; } .reward-heading strong { font-size:20px; } }
 

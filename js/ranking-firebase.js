@@ -249,6 +249,25 @@
       db = firestoreModule.getFirestore(app);
       firebaseApi = firestoreModule;
       firebaseReady = true;
+      window.pokemonFirebase = {
+        app,
+        auth,
+        db,
+        api: firestoreModule,
+        getUser: () => currentUser,
+        ready: () => firebaseReady,
+        ensureUser: async () => {
+          if (currentUser) return currentUser;
+          try {
+            const credential = await authModule.signInAnonymously(auth);
+            return credential.user;
+          } catch (anonymousError) {
+            const credential = await authModule.signInWithPopup(auth, new authModule.GoogleAuthProvider());
+            return credential.user;
+          }
+        },
+      };
+      window.dispatchEvent(new CustomEvent('pokemon-firebase-ready'));
       authModule.onAuthStateChanged(auth, async (user) => {
         currentUser = user;
         await updateAuthUi(firestoreModule);

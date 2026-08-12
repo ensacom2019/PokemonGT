@@ -5,7 +5,7 @@
 ## 처음 한 번만 할 설정
 
 1. Firebase Console에서 해당 프로젝트를 연다.
-2. **Firestore Database → Rules**에서 `firebase/firestore.rules` 전체 내용을 붙여 넣고 **Publish**한다.
+2. **Firestore Database → Rules**에서 `firebase/firestore.rules` 전체 내용을 붙여 넣고 **Publish**한다. 이 규칙에는 랭킹·로그와 함께 1:1 대전방(`pokemonGTournamentRooms`) 권한도 포함된다.
 3. **Authentication → Sign-in method**에서 Google 제공업체를 활성화한다.
 4. **Authentication → Settings → Authorized domains**에 실제 Firebase Hosting 도메인을 추가한다. 로컬 점검을 할 경우 `localhost`도 추가한다.
 

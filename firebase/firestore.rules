@@ -74,5 +74,94 @@ service cloud.firestore {
           && request.resource.data.savedAt is timestamp;
       }
     }
+
+    match /pokemonGTournamentRooms/{roomCode} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.hostId == request.auth.uid
+        && validRoomCode(roomCode)
+        && validRoom();
+      allow update: if request.auth != null
+        && validRoomCode(roomCode)
+        && validRoom()
+        && isParticipant()
+        && immutableRoomIdentity()
+        && allowedRoomChange();
+      allow delete: if false;
+
+      function validRoomCode(roomCode) {
+        return roomCode is string && roomCode.size() == 5;
+      }
+
+      function isHost() {
+        return resource.data.hostId == request.auth.uid;
+      }
+
+      function isGuest() {
+        return resource.data.guestId == request.auth.uid;
+      }
+
+      function isJoiningGuest() {
+        return resource.data.guestId == null
+          && request.resource.data.guestId == request.auth.uid
+          && resource.data.status == 'waiting';
+      }
+
+      function isParticipant() {
+        return isHost() || isGuest() || isJoiningGuest();
+      }
+
+      function immutableRoomIdentity() {
+        return request.resource.data.hostId == resource.data.hostId
+          && (resource.data.guestId == null || request.resource.data.guestId == resource.data.guestId)
+          && request.resource.data.hostPokemonId == resource.data.hostPokemonId
+          && (resource.data.guestPokemonId == null || request.resource.data.guestPokemonId == resource.data.guestPokemonId)
+          && request.resource.data.createdAt == resource.data.createdAt;
+      }
+
+      function allowedRoomChange() {
+        return isHost()
+          || (isGuest()
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+              'guestQueue', 'guestConnectedAt', 'updatedAt'
+            ]))
+          || (isJoiningGuest()
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+              'guestId', 'guestPokemonId', 'guestQueue', 'guestConnectedAt', 'status', 'updatedAt'
+            ]));
+      }
+
+      function validRoom() {
+        return request.resource.data.keys().hasOnly([
+            'hostId', 'guestId', 'hostPokemonId', 'guestPokemonId', 'hostQueue',
+            'guestQueue', 'status', 'round', 'turn', 'lastFirst', 'mapTheme',
+            'battleState', 'hostConnectedAt', 'guestConnectedAt', 'disconnectAt',
+            'disconnectedSide', 'winnerSide', 'createdAt', 'updatedAt'
+          ])
+          && request.resource.data.hostId is string
+          && (request.resource.data.guestId == null || request.resource.data.guestId is string)
+          && request.resource.data.hostPokemonId is string
+          && (request.resource.data.guestPokemonId == null || request.resource.data.guestPokemonId is string)
+          && request.resource.data.hostQueue is list
+          && request.resource.data.hostQueue.size() <= 3
+          && request.resource.data.guestQueue is list
+          && request.resource.data.guestQueue.size() <= 3
+          && request.resource.data.status in ['waiting', 'selecting', 'resolving', 'finished']
+          && request.resource.data.round is int
+          && request.resource.data.round >= 1
+          && request.resource.data.turn is int
+          && request.resource.data.turn >= 0
+          && request.resource.data.lastFirst in ['host', 'guest']
+          && request.resource.data.mapTheme is string
+          && request.resource.data.battleState is map
+          && request.resource.data.hostConnectedAt is int
+          && (request.resource.data.guestConnectedAt == null || request.resource.data.guestConnectedAt is int)
+          && (request.resource.data.disconnectAt == null || request.resource.data.disconnectAt is int)
+          && (request.resource.data.disconnectedSide == null || request.resource.data.disconnectedSide in ['host', 'guest'])
+          && (request.resource.data.winnerSide == null || request.resource.data.winnerSide in ['host', 'guest'])
+          && request.resource.data.createdAt is int
+          && request.resource.data.updatedAt is int;
+      }
+    }
   }
 }
