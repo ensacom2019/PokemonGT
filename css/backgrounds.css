@@ -22,7 +22,7 @@
 .battle-grid .grid-cell { z-index:1; }
 
 /* Title-screen type advantage loop: grass > water > fire > grass. */
-.type-cycle { position:absolute; z-index:4; top:34px; left:18px; width:min(44%,300px); padding:12px 13px 9px; border:1px solid rgba(101,229,226,.38); background:linear-gradient(135deg,rgba(101,229,226,.12),rgba(10,18,25,.84) 55%); box-shadow:7px 7px 0 rgba(101,229,226,.06); }
+.type-cycle { position:absolute; z-index:5; top:20px; left:18px; width:min(44%,300px); padding:12px 13px 9px; border:1px solid rgba(101,229,226,.38); background:linear-gradient(135deg,rgba(101,229,226,.12),rgba(10,18,25,.94) 55%); box-shadow:7px 7px 0 rgba(101,229,226,.06); }
 .type-cycle-title { display:flex; justify-content:space-between; gap:8px; margin:0; color:var(--cyan); font:800 12px/1 var(--display); letter-spacing:.08em; }
 .type-cycle-title b { color:var(--amber); font:700 10px/1 var(--mono); letter-spacing:0; white-space:nowrap; }
 .type-cycle-map { position:relative; height:151px; margin-top:5px; }
@@ -92,7 +92,7 @@
 .ranking-submit-status { grid-column:1 / -1; min-height:16px; margin:0; color:var(--muted); font-size:11px; }
 .ranking-submit-status.ready { color:var(--lime); }
 .ranking-submit-status.error { color:var(--coral); }
-@media (max-width:700px) { .title-ranking { position:relative; top:auto; right:auto; width:100%; max-height:none; margin-top:14px; } .hero-side { display:flex; flex-direction:column; } .result-ranking .ranking-list { grid-template-columns:1fr; } .ranking-submit { grid-template-columns:1fr; } .ranking-submit .button { width:100%; } .ranking-submit .google-sign-in { width:40px; } }
+@media (max-width:700px) { .title-ranking { position:relative; top:auto; right:auto; width:100%; max-height:none; margin-top:14px; } .type-cycle { position:relative; top:auto; left:auto; width:100%; margin-top:14px; } .hero-side { display:flex; flex-direction:column; } .result-ranking .ranking-list { grid-template-columns:1fr; } .ranking-submit { grid-template-columns:1fr; } .ranking-submit .button { width:100%; } .ranking-submit .google-sign-in { width:40px; } }
 
 /* Four generation columns, with grass / fire / water stacked vertically. */
 .generation-roster.compact-roster { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; width:min(100%,1040px); margin:0 auto; }
