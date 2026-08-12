@@ -2,6 +2,7 @@
   const ROOM_COLLECTION = 'pokemonGTournamentRooms';
   const DISCONNECT_GRACE_MS = 10_000;
   const HEARTBEAT_MS = 3_000;
+  const ROUND_SELECTION_MS = 40_000;
   const ROOM_CODE_RE = /^[A-Z0-9]{5}$/;
   const ROOM_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const lobby = document.querySelector('#multiplayer-lobby');
@@ -19,6 +20,9 @@
   let pendingMode = null;
   let applyingSnapshot = false;
   let resolving = false;
+  let selectionTicker = null;
+  let selectionDeadline = null;
+  let timeoutFilling = false;
 
   const firebase = () => window.pokemonFirebase;
   const isMulti = () => Boolean(roomCode && roomRole && state.multiplayer?.roomCode === roomCode);
@@ -76,6 +80,7 @@
     roomUnsubscribe?.(); roomUnsubscribe = null;
     clearInterval(heartbeatTimer); heartbeatTimer = null;
     roomCode = null; roomRole = null; pendingMode = null; resolving = false; applyingSnapshot = false;
+    clearInterval(selectionTicker); selectionTicker = null; selectionDeadline = null; timeoutFilling = false;
     delete state.roomPartnerCode;
     delete state.multiplayer;
     statusText('');
@@ -103,6 +108,62 @@
     clearInterval(heartbeatTimer);
     heartbeatTimer = setInterval(heartbeat, HEARTBEAT_MS);
     heartbeat();
+  };
+  const queueWithRandomCards = (fighter, selected = []) => {
+    const queue = [...selected];
+    let energy = Number(fighter.energy || 0);
+    const applyEnergy = (id) => {
+      const card = cardById(id);
+      if (!card) return;
+      energy = card.kind === 'energy' ? Math.min(fighter.maxEnergy || 100, energy + Number(card.restore || 0)) : Math.max(0, energy - Number(card.energy || 0));
+    };
+    queue.forEach(applyEnergy);
+    while (queue.length < 3) {
+      const unused = getHand(fighter).filter((card) => !queue.includes(card.id));
+      const affordable = unused.filter((card) => card.kind === 'energy' || Number(card.energy || 0) <= energy);
+      const candidates = affordable.length ? affordable : unused;
+      if (!candidates.length) break;
+      const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+      queue.push(chosen.id);
+      applyEnergy(chosen.id);
+    }
+    return queue;
+  };
+  const renderSelectionCountdown = () => {
+    if (!isMulti() || !selectionDeadline || state.executing || state.gameOver) return;
+    const remaining = Math.max(0, Math.ceil((selectionDeadline - Date.now()) / 1000));
+    $('#round-state').textContent = `선택 ${String(remaining).padStart(2, '0')}초`;
+  };
+  const fillQueuesOnTimeout = async () => {
+    if (!isMulti() || roomRole !== 'host' || timeoutFilling || state.executing || state.gameOver) return;
+    timeoutFilling = true;
+    try {
+      const hostQueue = queueWithRandomCards(state.player, state.queue);
+      const guestQueue = queueWithRandomCards(state.cpu, state.cpuQueue);
+      if (hostQueue.length !== 3 || guestQueue.length !== 3) return;
+      await updateRoom({ hostQueue, guestQueue, selectionDeadline: null });
+      statusText('선택 시간이 종료되어 남은 카드를 무작위로 채웠습니다.', 'is-warning');
+    } catch (error) {
+      console.error(error);
+    } finally {
+      timeoutFilling = false;
+    }
+  };
+  const syncSelectionTimer = (room) => {
+    const deadline = Number(room.selectionDeadline || 0);
+    if (room.status !== 'selecting' || !deadline) {
+      clearInterval(selectionTicker); selectionTicker = null; selectionDeadline = null;
+      return;
+    }
+    selectionDeadline = deadline;
+    if (!selectionTicker) {
+      selectionTicker = setInterval(() => {
+        renderSelectionCountdown();
+        if (Date.now() >= selectionDeadline && roomRole === 'host') fillQueuesOnTimeout();
+      }, 250);
+    }
+    renderSelectionCountdown();
+    if (Date.now() >= deadline && roomRole === 'host') fillQueuesOnTimeout();
   };
   const showPartnerSelect = (room) => {
     const ownPokemonId = room[ownPokemonKey()];
@@ -155,7 +216,7 @@
             hostId: user.uid, guestId: null, hostPokemonId: null, guestPokemonId: null,
             hostQueue: [], guestQueue: [], status: 'waiting', round: 1, turn: 0,
             lastFirst: 'host', mapTheme: ['grassland', 'forest', 'lake'][Math.floor(Math.random() * 3)],
-            battleState: {}, hostConnectedAt: now, guestConnectedAt: null,
+            battleState: {}, selectionDeadline: null, hostConnectedAt: now, guestConnectedAt: null,
             disconnectAt: null, disconnectedSide: null, winnerSide: null, createdAt: now, updatedAt: now,
           });
         });
@@ -241,7 +302,7 @@
     state.gameOver = false; state.executing = false; state.previewCard = null; state.mapTheme = room.mapTheme;
     window.resetBattleActionHistory?.();
     pendingMode = null; delete state.roomPartnerCode;
-    await updateRoom({ battleState: serializeBattle(), status: 'selecting', round: 1, turn: 0, lastFirst: 'host' });
+    await updateRoom({ battleState: serializeBattle(), status: 'selecting', round: 1, turn: 0, lastFirst: 'host', selectionDeadline: Date.now() + ROUND_SELECTION_MS });
   };
   const applyRoomBattle = (room) => {
     const battle = room.battleState;
@@ -267,7 +328,8 @@
     } catch (error) { console.error(error); toast('선택한 카드를 전송하지 못했습니다.'); }
   };
   const publishBattle = async (status = 'selecting', extra = {}) => {
-    await updateRoom({ battleState: serializeBattle(), status, round: state.round, turn: state.turn, lastFirst: state.lastFirst === 'player' ? 'host' : 'guest', hostQueue: [], guestQueue: [], ...extra });
+    const deadline = status === 'selecting' ? Date.now() + ROUND_SELECTION_MS : null;
+    await updateRoom({ battleState: serializeBattle(), status, round: state.round, turn: state.turn, lastFirst: state.lastFirst === 'player' ? 'host' : 'guest', hostQueue: [], guestQueue: [], selectionDeadline: deadline, ...extra });
   };
   const showMultiplayerResult = (winner) => {
     const localWin = winner === ownKey();
@@ -301,7 +363,7 @@
       pair.sort(compareActions); actions.push(...pair);
     }
     renderPriority(actions); renderBattle();
-    updateRoom({ status: 'resolving', hostQueue: clone(state.queue), guestQueue: clone(state.cpuQueue) }).catch(console.error);
+    updateRoom({ status: 'resolving', hostQueue: clone(state.queue), guestQueue: clone(state.cpuQueue), selectionDeadline: null }).catch(console.error);
     let cursor = 0;
     const next = () => {
       if (state.gameOver) { resolving = false; return; }
@@ -361,9 +423,13 @@
     if (room.status === 'finished') { showMultiplayerResult(room.winnerSide); return; }
     if (state.screen !== 'battle') showScreen('battle');
     renderBattle();
+    if (room.status === 'selecting' && !Number(room.selectionDeadline) && roomRole === 'host' && !(room.hostQueue?.length === 3 && room.guestQueue?.length === 3)) {
+      updateRoom({ selectionDeadline: Date.now() + ROUND_SELECTION_MS }).catch(console.error);
+    }
+    syncSelectionTimer(room);
     if (room.status === 'resolving') statusText('양쪽 카드 공개 · 행동을 진행 중입니다.');
     else if ((room[ownQueueKey()] || []).length === 3) statusText('카드 선택 완료 · 상대를 기다리는 중입니다.');
-    else statusText(`카드 ${state.queue.length}/3장 선택`);
+    else statusText(`카드 ${state.queue.length}/3장 선택 · ${Math.max(0, Math.ceil((Number(room.selectionDeadline || 0) - Date.now()) / 1000))}초`);
     if (roomRole === 'host' && room.status === 'selecting' && room.hostQueue?.length === 3 && room.guestQueue?.length === 3) runHostRound();
     checkDisconnect(room);
   };

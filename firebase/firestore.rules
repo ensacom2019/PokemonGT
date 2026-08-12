@@ -134,7 +134,7 @@ service cloud.firestore {
       function validRoom() {
         return request.resource.data.keys().hasOnly([
             'hostId', 'guestId', 'hostPokemonId', 'guestPokemonId', 'hostQueue',
-            'guestQueue', 'status', 'round', 'turn', 'lastFirst', 'mapTheme',
+            'guestQueue', 'status', 'round', 'turn', 'lastFirst', 'mapTheme', 'selectionDeadline',
             'battleState', 'hostConnectedAt', 'guestConnectedAt', 'disconnectAt',
             'disconnectedSide', 'winnerSide', 'createdAt', 'updatedAt'
           ])
@@ -153,6 +153,7 @@ service cloud.firestore {
           && request.resource.data.turn >= 0
           && request.resource.data.lastFirst in ['host', 'guest']
           && request.resource.data.mapTheme is string
+          && (request.resource.data.selectionDeadline == null || request.resource.data.selectionDeadline is int)
           && request.resource.data.battleState is map
           && request.resource.data.hostConnectedAt is int
           && (request.resource.data.guestConnectedAt == null || request.resource.data.guestConnectedAt is int)
