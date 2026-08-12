@@ -335,7 +335,7 @@
     const position = { x: fighter.x, y: fighter.y, hp: fighter.hp, energy: fighter.energy, evolutionReady: fighter.evolutionReady, evolved: fighter.evolved };
     const selected = [];
     for (let slot = 0; slot < 3; slot += 1) {
-      const candidates = cards.filter((card) => card.kind !== 'evolution' || !selected.includes(card.id));
+      const candidates = cards.filter((card) => !selected.includes(card.id));
       const moveCount = selected.reduce((count, id) => count + (cards.find((card) => card.id === id)?.kind === 'move' ? 1 : 0), 0);
       let best = candidates[0];
       let bestScore = -Infinity;

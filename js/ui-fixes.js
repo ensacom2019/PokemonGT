@@ -205,8 +205,12 @@
 })();
 
 (() => {
-  window.toggleCard = function toggleCardRepeatable(id) {
+  window.toggleCard = function toggleCardOncePerRound(id) {
     if (state.executing) return;
+    if (state.queue.includes(id)) {
+      toast('\uAC19\uC740 \uCE74\uB4DC\uB294 \uB77C\uC6B4\uB4DC\uB2F9 \uD55C \uBC88\uB9CC \uC120\uD0DD\uD560 \uC218 \uC788\uC5B4\uC694.');
+      return;
+    }
     if (state.queue.length >= 3) {
       toast('\uCE74\uB4DC\uB294 \uC815\uD655\uD788 3\uC7A5\uAE4C\uC9C0 \uC120\uD0DD\uD560 \uC218 \uC788\uC5B4\uC694.');
       return;
@@ -233,7 +237,7 @@
     $('#advance-round').disabled = state.queue.length !== 3 || state.gameOver || state.executing;
   };
 
-  window.chooseCpuQueue = function chooseCpuQueueRepeatable() {
+  window.chooseCpuQueue = function chooseCpuQueueOncePerRound() {
     const all = getHand(state.cpu);
     const result = [];
     if (state.cpu.energy < 35) {
@@ -241,7 +245,9 @@
       if (energyCard) result.push(energyCard.id);
     }
     while (result.length < 3) {
-      result.push(all[Math.floor(Math.random() * all.length)].id);
+      const remaining = all.filter((card) => !result.includes(card.id));
+      if (!remaining.length) break;
+      result.push(remaining[Math.floor(Math.random() * remaining.length)].id);
     }
     return result;
   };
@@ -252,7 +258,7 @@
     hand.innerHTML = getHand(state.player).map((card) => {
       const queuedCount = state.queue.filter((id) => id === card.id).length;
       const canAfford = card.energy <= energyAfterQueue;
-      const unavailable = state.executing || state.queue.length >= 3 || !canAfford;
+      const unavailable = state.executing || queuedCount > 0 || state.queue.length >= 3 || !canAfford;
       const role = card.kind === 'attack' ? '\uAE30\uC220' : card.kind === 'move' ? '\uC774\uB3D9' : card.kind === 'guard' ? '\uBC29\uC5B4' : card.kind === 'evolution' ? '\uC9C4\uD654' : card.kind === 'upgrade' ? '\uAC15\uD654' : '\uD68C\uBCF5';
       const range = card.kind === 'attack' ? '' : card.kind === 'move' ? (card.id === 'back2' ? '\uB4A4\uB85C 2\uCE78' : '\uBC94\uC704 1\uCE78') : card.kind === 'evolution' ? '\uC9C4\uD654 \uAC00\uB2A5' : '\uC790\uC2E0';
       const art = card.kind === 'attack' ? `<img class="card-character-art" src="${state.player.image}" alt="" />` : '';

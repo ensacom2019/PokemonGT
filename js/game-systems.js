@@ -114,7 +114,12 @@
     if (!cpu || !player) return base;
     const cards = getHand(cpu) || [];
     const preventMoveOnlyQueue = (queue) => {
-      const result = queue.filter(Boolean).slice(0, 3);
+      const result = [...new Set(queue.filter(Boolean))].slice(0, 3);
+      const fillPool = [...cards.filter((card) => card.kind === 'attack' && card.energy <= cpu.energy && attackPatternContains(cpu, player, card)), ...cards.filter((card) => card.energy <= cpu.energy)];
+      for (const card of fillPool) {
+        if (result.length >= 3) break;
+        if (!result.includes(card.id)) result.push(card.id);
+      }
       const moveCount = result.reduce((count, id) => count + (cards.find((card) => card.id === id)?.kind === 'move' ? 1 : 0), 0);
       if (result.length !== 3 || moveCount < 3) return result;
       const replacement = cards.find((card) => card.kind === 'attack' && card.energy <= cpu.energy && attackPatternContains(cpu, player, card))
