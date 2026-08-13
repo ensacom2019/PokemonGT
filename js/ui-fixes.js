@@ -144,6 +144,23 @@
   };
 
   const removeLater = (element, delay = 600) => setTimeout(() => element.remove(), delay);
+  const playFighterSprite = (token, animation, duration) => {
+    const pokemonId = token?.dataset.pokemon;
+    if (!pokemonId) return;
+    token.querySelector('.combat-action-sprite')?.remove();
+    const sprite = document.createElement('img');
+    sprite.className = `combat-action-sprite ${animation}`;
+    sprite.alt = '';
+    sprite.setAttribute('aria-hidden', 'true');
+    sprite.src = `assets/pokemon/combat/${pokemonId}-${animation}.gif`;
+    sprite.addEventListener('load', () => token.classList.add('uses-combat-sprite'), { once: true });
+    sprite.addEventListener('error', () => sprite.remove(), { once: true });
+    token.append(sprite);
+    setTimeout(() => {
+      sprite.remove();
+      if (!token.querySelector('.combat-action-sprite')) token.classList.remove('uses-combat-sprite');
+    }, duration);
+  };
 
   window.animateCombatAction = (fighter, target, card, hit) => {
     const grid = document.querySelector('#battle-grid');
@@ -160,6 +177,7 @@
       void token.offsetWidth;
       token.classList.add('is-attacking');
       setTimeout(() => token.classList.remove('is-attacking'), 380);
+      if (card.kind === 'attack') playFighterSprite(token, 'attack', 620);
     }
 
     if (card.kind === 'attack') {
@@ -188,6 +206,7 @@
             void targetToken.offsetWidth;
             targetToken.classList.add('is-hit');
             setTimeout(() => targetToken.classList.remove('is-hit'), 420);
+            playFighterSprite(targetToken, 'hurt', 440);
           }
         }
       }, 260);
