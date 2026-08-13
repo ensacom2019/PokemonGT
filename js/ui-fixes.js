@@ -176,8 +176,8 @@
       token.classList.remove('is-attacking', 'is-hit');
       void token.offsetWidth;
       token.classList.add('is-attacking');
-      setTimeout(() => token.classList.remove('is-attacking'), 380);
-      if (card.kind === 'attack') playFighterSprite(token, 'attack', 620);
+      setTimeout(() => token.classList.remove('is-attacking'), 620);
+      if (card.kind === 'attack') playFighterSprite(token, 'attack', 1050);
     }
 
     if (card.kind === 'attack') {
@@ -205,11 +205,11 @@
             targetToken.classList.remove('is-hit');
             void targetToken.offsetWidth;
             targetToken.classList.add('is-hit');
-            setTimeout(() => targetToken.classList.remove('is-hit'), 420);
-            playFighterSprite(targetToken, 'hurt', 440);
+            setTimeout(() => targetToken.classList.remove('is-hit'), 580);
+            playFighterSprite(targetToken, 'hurt', 650);
           }
         }
-      }, 260);
+      }, 400);
       return;
     }
 
@@ -219,7 +219,7 @@
     selfEffect.style.left = `${from.x}px`;
     selfEffect.style.top = `${from.y}px`;
     layer.append(selfEffect);
-    removeLater(selfEffect, 520);
+    removeLater(selfEffect, 650);
   };
 })();
 

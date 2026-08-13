@@ -56,7 +56,8 @@ foreach ($monster in $pokemon) {
     $sheet.Dispose()
 
     $resultPath = Join-Path $outputDirectory "$($monster.id)-$($animationName.ToLower()).gif"
-    & ffmpeg -hide_banner -loglevel error -y -framerate 18 -i (Join-Path $frameDirectory '%03d.png') -vf 'scale=iw*2:ih*2:flags=neighbor' -loop 0 $resultPath
+    $frameRate = if ($animationName -eq 'Attack') { 12 } else { 8 }
+    & ffmpeg -hide_banner -loglevel error -y -framerate $frameRate -i (Join-Path $frameDirectory '%03d.png') -vf 'scale=iw*2:ih*2:flags=neighbor' -loop 0 $resultPath
     if ($LASTEXITCODE -ne 0) { throw "$($monster.id): $animationName GIF conversion failed." }
   }
 }
