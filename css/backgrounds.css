@@ -272,6 +272,12 @@
 .fighter-token[data-pokemon="sceptile"] .token-art { bottom:-25%; }
 .fighter-token[data-pokemon="blaziken"] .token-art { bottom:-19%; }
 .fighter-token[data-pokemon="swampert"] .token-art { bottom:-36%; }
+.fighter-token[data-pokemon="venusaur"] .token-art { bottom:-28%; }
+.fighter-token[data-pokemon="charizard"] .token-art { bottom:-15%; }
+.fighter-token[data-pokemon="blastoise"] .token-art { bottom:-30%; }
+.fighter-token[data-pokemon="meganium"] .token-art { bottom:-13%; }
+.fighter-token[data-pokemon="typhlosion"] .token-art { bottom:-24%; }
+.fighter-token[data-pokemon="feraligatr"] .token-art { bottom:-22%; }
 .fighter-token,
 .fighter-token .token-art { animation:none !important; }
 @media (max-width:700px) {
@@ -287,6 +293,12 @@
   .fighter-token[data-pokemon="sceptile"] .token-art { bottom:-22%; }
   .fighter-token[data-pokemon="blaziken"] .token-art { bottom:-17%; }
   .fighter-token[data-pokemon="swampert"] .token-art { bottom:-31%; }
+  .fighter-token[data-pokemon="venusaur"] .token-art { bottom:-25%; }
+  .fighter-token[data-pokemon="charizard"] .token-art { bottom:-13%; }
+  .fighter-token[data-pokemon="blastoise"] .token-art { bottom:-26%; }
+  .fighter-token[data-pokemon="meganium"] .token-art { bottom:-12%; }
+  .fighter-token[data-pokemon="typhlosion"] .token-art { bottom:-21%; }
+  .fighter-token[data-pokemon="feraligatr"] .token-art { bottom:-20%; }
 }
 
 /* Keep the partner heading readable and prevent pixel art from creating mobile overflow. */
