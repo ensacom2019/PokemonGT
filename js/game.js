@@ -216,15 +216,15 @@ function executeRound() {
     const current=actions[cursor];
     state.lastFirst=current.fighter.side;
     window.showActionPreview?.(current.fighter,current.card);
-    setTimeout(()=>{
+      setTimeout(()=>{
       if(state.gameOver){ window.clearActionPreview?.(); return; }
       state.turn++;
       resolveAction(current.fighter,current.card);
       updateActionVisuals();
       window.clearActionPreview?.();
       cursor++;
-      setTimeout(runNextAction,220);
-    },300);
+      setTimeout(runNextAction,620);
+    },420);
   };
   runNextAction();
 }
