@@ -416,6 +416,7 @@
     if (multiplayerResultShown) return;
     multiplayerResultShown = true;
     const localWin = winner === ownKey();
+    if (localWin) window.pokemonFirebase?.recordMultiplayerWin?.();
     state.gameOver = true; state.executing = false; state.resultWinnerSide = localWin ? 'player' : 'cpu';
     statusText('');
     roomUnsubscribe?.(); roomUnsubscribe = null;

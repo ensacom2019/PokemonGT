@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#10141f" />
     <title>포켓몬 // 그리드 배틀</title>
-    <link rel="stylesheet" href="css/styles.css?v=8" />
+    <link rel="stylesheet" href="css/styles.css?v=9" />
+    <link rel="stylesheet" href="css/title-profile.css?v=1" />
     <link rel="stylesheet" href="css/backgrounds.css?v=48" />
   </head>
   <body>
@@ -42,6 +43,14 @@
             <div id="room-entry-form" class="room-entry-row"><input id="room-code-input" maxlength="5" inputmode="text" autocomplete="off" placeholder="방 코드 5자리" aria-label="방 코드" /><button id="join-room" class="button" type="button">입장</button></div>
           </div>
           <div class="rule-chips"><span>5 × 6 전장</span><span>카드 3장 큐</span><span>불타는 칸 −20</span></div>
+          <section id="title-player-stats" class="title-player-stats" aria-label="내 전적" hidden>
+            <span class="title-player-stats-label">내 전적</span>
+            <strong id="title-player-name">트레이너</strong>
+            <div class="title-player-stat-list">
+              <span>최고 점수 <b id="title-player-best-score">000000</b></span>
+              <span>대전 승리 <b id="title-player-multiplayer-wins">0승</b></span>
+            </div>
+          </section>
         </div>
         <div class="hero-side">
           <div class="hero-visual">
@@ -150,8 +159,8 @@
     <script src="js/rewards.js?v=19"></script>
     <script src="js/game-systems.js?v=10"></script>
     <script src="js/battle-items.js?v=1"></script>
-    <script src="js/ranking-firebase.js?v=6"></script>
+    <script src="js/ranking-firebase.js?v=7"></script>
     <script src="js/audio.js?v=6"></script>
-    <script src="js/multiplayer.js?v=13"></script>
+    <script src="js/multiplayer.js?v=14"></script>
   </body>
 </html>

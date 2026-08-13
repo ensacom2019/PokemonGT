@@ -8,6 +8,7 @@
     appId: '1:628240153353:web:3c90ea5a55866f9f79b1d8',
   };
   const COLLECTION = 'pokemonGTournamentRankings';
+  const PLAYER_STATS_COLLECTION = 'pokemonGTournamentPlayerStats';
   const BATTLE_LOG_COLLECTION = 'pokemonGTournamentBattleLogs';
   const MAX_ENTRIES = 10;
   const NICKNAME_KEY = 'pokemon-g-tournament-nickname';
@@ -31,8 +32,13 @@
   const saveButton = document.querySelector('#save-ranking');
   const nicknameInput = document.querySelector('#ranking-nickname');
   const submitStatus = document.querySelector('#ranking-submit-status');
+  const titlePlayerStats = document.querySelector('#title-player-stats');
+  const titlePlayerName = document.querySelector('#title-player-name');
+  const titlePlayerBestScore = document.querySelector('#title-player-best-score');
+  const titlePlayerMultiplayerWins = document.querySelector('#title-player-multiplayer-wins');
 
   const formatScore = (value) => String(Math.max(0, Math.floor(Number(value) || 0))).padStart(6, '0');
+  const isGoogleUser = (user) => Boolean(user && !user.isAnonymous && user.providerData?.some((provider) => provider.providerId === 'google.com'));
   const cleanNickname = (value) => String(value || '').trim().replace(/[<>]/g, '').slice(0, 16);
   const makeId = () => globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
   const sessionId = () => {
@@ -186,6 +192,49 @@
       setRankingState(error.code === 'permission-denied' ? '랭킹 규칙 배포를 기다리고 있습니다.' : '랭킹을 불러오지 못했습니다.');
     }
   };
+  const refreshTitlePlayerStats = async () => {
+    if (!titlePlayerStats) return;
+    if (!firebaseReady || !firebaseApi || !isGoogleUser(currentUser)) {
+      titlePlayerStats.hidden = true;
+      return;
+    }
+    try {
+      const [ranking, profile] = await Promise.all([
+        firebaseApi.getDoc(firebaseApi.doc(db, COLLECTION, currentUser.uid)),
+        firebaseApi.getDoc(firebaseApi.doc(db, PLAYER_STATS_COLLECTION, currentUser.uid)),
+      ]);
+      const rankingData = ranking.exists() ? ranking.data() : {};
+      const profileData = profile.exists() ? profile.data() : {};
+      const displayName = rankingData.nickname || currentUser.displayName || currentUser.email?.split('@')[0] || '트레이너';
+      titlePlayerName.textContent = displayName;
+      titlePlayerBestScore.textContent = formatScore(rankingData.score);
+      titlePlayerMultiplayerWins.textContent = `${Math.max(0, Math.floor(Number(profileData.multiplayerWins) || 0))}승`;
+      titlePlayerStats.hidden = false;
+    } catch (error) {
+      console.error('타이틀 전적을 불러오지 못했습니다.', error);
+      titlePlayerStats.hidden = true;
+    }
+  };
+  const recordMultiplayerWin = async () => {
+    if (!firebaseReady || !firebaseApi || !isGoogleUser(currentUser)) return false;
+    const profileRef = firebaseApi.doc(db, PLAYER_STATS_COLLECTION, currentUser.uid);
+    try {
+      await firebaseApi.runTransaction(db, async (transaction) => {
+        const snapshot = await transaction.get(profileRef);
+        const previousWins = snapshot.exists() ? Math.max(0, Math.floor(Number(snapshot.data().multiplayerWins) || 0)) : 0;
+        transaction.set(profileRef, {
+          userId: currentUser.uid,
+          multiplayerWins: previousWins + 1,
+          updatedAt: firebaseApi.serverTimestamp(),
+        });
+      });
+      await refreshTitlePlayerStats();
+      return true;
+    } catch (error) {
+      console.error('대전 승수를 저장하지 못했습니다.', error);
+      return false;
+    }
+  };
   const updateAuthUi = async (firebase) => {
     const signedIn = Boolean(currentUser);
     const googleAction = signedIn ? 'Google 로그아웃' : 'Google로 로그인';
@@ -256,6 +305,9 @@
         api: firestoreModule,
         getUser: () => currentUser,
         ready: () => firebaseReady,
+        isGoogleUser: () => isGoogleUser(currentUser),
+        refreshTitlePlayerStats,
+        recordMultiplayerWin,
         ensureUser: async () => {
           if (currentUser) return currentUser;
           try {
@@ -271,6 +323,7 @@
       authModule.onAuthStateChanged(auth, async (user) => {
         currentUser = user;
         await updateAuthUi(firestoreModule);
+        await refreshTitlePlayerStats();
         if (user) await flushPendingBattleLogs();
       });
       googleButton.addEventListener('click', async () => {
