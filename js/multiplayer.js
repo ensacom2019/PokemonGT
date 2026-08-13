@@ -38,6 +38,8 @@
   let lastCountdownNumber = null;
   let resultReturnTimer = null;
   let partnerRetryTimer = null;
+  // 상대 큐는 방장 판정용으로만 보관한다. resolving 전에는 화면 상태에 넣지 않는다.
+  let pendingEnemyQueue = [];
 
   const firebase = () => window.pokemonFirebase;
   const isMulti = () => Boolean(roomCode && roomRole && state.multiplayer?.roomCode === roomCode);
@@ -197,7 +199,7 @@
     timeoutFilling = true;
     try {
       const hostQueue = queueWithRandomCards(state.player, state.queue);
-      const guestQueue = queueWithRandomCards(state.cpu, state.cpuQueue);
+      const guestQueue = queueWithRandomCards(state.cpu, pendingEnemyQueue);
       if (hostQueue.length !== 3 || guestQueue.length !== 3) return;
       await updateRoom({ hostQueue, guestQueue, hostReady: true, guestReady: true, selectionDeadline: null });
       statusText('선택 시간이 종료되어 남은 카드를 무작위로 채웠습니다.', 'is-warning');
@@ -379,7 +381,7 @@
       state.player = restoreFighter(cleanFighter({ ...host, attacks: host.attacks, maxHp: 100, maxEnergy: 100, hp: 100, energy: 100, x: 1, y: 2 }), 'player');
       state.cpu = restoreFighter(cleanFighter({ ...guest, attacks: guest.attacks, maxHp: 100, maxEnergy: 100, hp: 100, energy: 100, x: 4, y: 2 }), 'cpu');
       state.round = 1; state.turn = 0; state.lastFirst = 'player'; state.hazard = new Set(); state.fieldItems = [];
-      state.nextFieldItemRound = 5 + Math.floor(Math.random() * 4); state.queue = []; state.cpuQueue = [];
+      state.nextFieldItemRound = 5 + Math.floor(Math.random() * 4); state.queue = []; state.cpuQueue = []; pendingEnemyQueue = [];
       state.gameOver = false; state.executing = false; state.previewCard = null; state.multiplayerReady = false; state.multiplayerEnemyReady = false; state.mapTheme = room.mapTheme;
       window.resetBattleActionHistory?.();
       pendingMode = null; delete state.roomPartnerCode;
@@ -423,7 +425,11 @@
     state.nextFieldItemRound = Number(battle.nextFieldItemRound || 5);
     state.round = Number(room.round || 1); state.turn = Number(room.turn || 0);
     state.lastFirst = room.lastFirst === ownKey() ? 'player' : 'cpu';
-    state.mapTheme = room.mapTheme; state.queue = clone(room[ownQueueKey()] || []); state.cpuQueue = clone(room[enemyQueueKey()] || []);
+    state.mapTheme = room.mapTheme;
+    state.queue = clone(room[ownQueueKey()] || []);
+    pendingEnemyQueue = clone(room[enemyQueueKey()] || []);
+    // 상대 카드와 행동 목록은 양쪽이 턴 실행을 확정해 resolving 상태가 된 뒤에만 공개한다.
+    state.cpuQueue = room.status === 'resolving' ? clone(pendingEnemyQueue) : [];
     state.multiplayerReady = Boolean(room[ownReadyKey()]); state.multiplayerEnemyReady = Boolean(room[enemyReadyKey()]);
     state.gameOver = room.status === 'finished'; state.executing = room.status === 'resolving';
     window.resetBattleActionHistory?.();
@@ -472,8 +478,9 @@
     showMultiplayerResult(winner);
   };
   const runHostRound = () => {
-    if (resolving || roomRole !== 'host' || state.queue.length !== 3 || state.cpuQueue.length !== 3 || !state.multiplayerReady || !state.multiplayerEnemyReady || state.gameOver) return;
+    if (resolving || roomRole !== 'host' || state.queue.length !== 3 || pendingEnemyQueue.length !== 3 || !state.multiplayerReady || !state.multiplayerEnemyReady || state.gameOver) return;
     resolving = true; state.executing = true; state.previewCard = null;
+    state.cpuQueue = clone(pendingEnemyQueue);
     const actions = [];
     for (let slot = 0; slot < 3; slot += 1) {
       const pair = [
