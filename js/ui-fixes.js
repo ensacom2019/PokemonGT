@@ -158,7 +158,7 @@
       token.classList.remove('is-attacking', 'is-hit');
       void token.offsetWidth;
       token.classList.add('is-attacking');
-      setTimeout(() => token.classList.remove('is-attacking'), 620);
+      setTimeout(() => token.classList.remove('is-attacking'), 760);
     }
 
     if (card.kind === 'attack') {
@@ -186,10 +186,10 @@
             targetToken.classList.remove('is-hit');
             void targetToken.offsetWidth;
             targetToken.classList.add('is-hit');
-            setTimeout(() => targetToken.classList.remove('is-hit'), 580);
+            setTimeout(() => targetToken.classList.remove('is-hit'), 720);
           }
         }
-      }, 400);
+      }, 520);
       return;
     }
 
@@ -199,7 +199,7 @@
     selfEffect.style.left = `${from.x}px`;
     selfEffect.style.top = `${from.y}px`;
     layer.append(selfEffect);
-    removeLater(selfEffect, 650);
+    removeLater(selfEffect, 760);
   };
 })();
 

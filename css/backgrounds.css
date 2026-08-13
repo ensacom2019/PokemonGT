@@ -309,20 +309,20 @@
 /* Battle skill effects and hit reactions. */
 .combat-effects { position:absolute; inset:0; z-index:8; pointer-events:none; overflow:visible; }
 .skill-projectile,.impact-effect,.self-effect { position:absolute; display:grid; place-items:center; transform:translate(-50%,-50%); font-family:var(--display); font-weight:900; pointer-events:none; }
-.skill-projectile { z-index:2; font-size:clamp(22px,3vw,34px); animation:skill-flight .4s cubic-bezier(.2,.8,.25,1) forwards; }
+.skill-projectile { z-index:2; font-size:clamp(22px,3vw,34px); animation:skill-flight .52s cubic-bezier(.2,.8,.25,1) forwards; }
 .skill-projectile.fire,.impact-effect.fire { color:#ffcf45; text-shadow:0 0 5px #fff4a3,0 0 14px #ff5b2e,0 0 28px #ff3a20; }
 .skill-projectile.water,.impact-effect.water { color:#9dfaff; text-shadow:0 0 7px #fff,0 0 17px #39c9ff; }
 .skill-projectile.grass,.impact-effect.grass { color:#d7ff74; text-shadow:0 0 7px #efffb0,0 0 17px #55cf67; }
 .skill-projectile.neutral,.impact-effect.neutral { color:#fff; text-shadow:0 0 7px #fff,0 0 17px #8c9eff; }
-.impact-effect { z-index:3; font-size:clamp(28px,4vw,48px); animation:impact-pop .48s ease-out forwards; }
-.impact-effect.miss { color:#cbd4d5; opacity:.7; font-size:24px; animation:impact-miss .35s ease-out forwards; }
+.impact-effect { z-index:3; font-size:clamp(28px,4vw,48px); animation:impact-pop .62s ease-out forwards; }
+.impact-effect.miss { color:#cbd4d5; opacity:.7; font-size:24px; animation:impact-miss .48s ease-out forwards; }
 .self-effect { z-index:2; font-size:clamp(28px,4vw,44px); animation:self-burst .5s ease-out forwards; }
 .self-effect.guard { color:#e6ff87; text-shadow:0 0 12px #d4ff55; }
 .self-effect.energy { color:#ffe6a1; text-shadow:0 0 12px #ffab35; }
 .self-effect.move { color:#9dfaff; text-shadow:0 0 12px #3ed9e0; }
-.fighter-token.is-attacking { animation:fighter-lunge .56s ease-out !important; }
-.fighter-token.is-hit { animation:fighter-hit .56s ease-out !important; }
-.fighter-token.is-hit .token-art { animation:hit-sprite-flash .56s steps(1,end) !important; }
+.fighter-token.is-attacking { animation:fighter-lunge .7s ease-out !important; }
+.fighter-token.is-hit { animation:fighter-hit .7s ease-out !important; }
+.fighter-token.is-hit .token-art { animation:hit-sprite-flash .7s steps(1,end) !important; }
 @keyframes skill-flight {
   0% { opacity:0; transform:translate(-50%,-50%) scale(.55) rotate(-18deg); }
   18% { opacity:1; }
