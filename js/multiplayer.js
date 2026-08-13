@@ -501,7 +501,9 @@
         if (state.gameOver) { window.clearActionPreview?.(); return; }
         state.turn += 1; resolveAction(action.fighter, action.card); updateActionVisuals(); window.clearActionPreview?.();
         updateRoom({ battleState: serializeBattle(), status: 'resolving', turn: state.turn, lastFirst: state.lastFirst === 'player' ? 'host' : 'guest' }).catch(console.error);
-        cursor += 1; setTimeout(next, 620);
+        cursor += 1;
+        const actionDuration = window.getCombatActionDuration?.(action.card) ?? 900;
+        setTimeout(next, actionDuration + 180);
       }, 420);
     };
     next();

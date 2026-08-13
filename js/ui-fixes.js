@@ -144,6 +144,8 @@
   };
 
   const removeLater = (element, delay = 600) => setTimeout(() => element.remove(), delay);
+  // 전투 진행기는 이 시간만큼 기다린 뒤 다음 카드를 처리한다.
+  window.getCombatActionDuration = (card) => card?.kind === 'attack' ? 1240 : 760;
   window.animateCombatAction = (fighter, target, card, hit) => {
     const grid = document.querySelector('#battle-grid');
     const layer = grid?.querySelector('.combat-effects');
@@ -178,7 +180,7 @@
         impact.style.left = `${to.x}px`;
         impact.style.top = `${to.y}px`;
         layer.append(impact);
-        removeLater(impact, 500);
+        removeLater(impact, 620);
         if (hit) {
           const targetToken = grid.querySelector(`.fighter-token.${target.side}`);
           if (targetToken) {

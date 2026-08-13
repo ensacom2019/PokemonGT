@@ -223,7 +223,8 @@ function executeRound() {
       updateActionVisuals();
       window.clearActionPreview?.();
       cursor++;
-      setTimeout(runNextAction,620);
+      const actionDuration=window.getCombatActionDuration?.(current.card) ?? 900;
+      setTimeout(runNextAction,actionDuration+180);
     },420);
   };
   runNextAction();
@@ -294,7 +295,8 @@ function executeRound() {
       updateActionVisuals();
       window.clearActionPreview?.();
       cursor++;
-      setTimeout(runNextAction,220);
+      const actionDuration=window.getCombatActionDuration?.(current.card) ?? 900;
+      setTimeout(runNextAction,actionDuration+180);
     },300);
   };
   runNextAction();
