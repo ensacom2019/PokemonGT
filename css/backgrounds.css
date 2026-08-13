@@ -322,28 +322,7 @@
 .self-effect.move { color:#9dfaff; text-shadow:0 0 12px #3ed9e0; }
 .fighter-token.is-attacking { animation:fighter-lunge .56s ease-out !important; }
 .fighter-token.is-hit { animation:fighter-hit .56s ease-out !important; }
-.fighter-token.uses-combat-sprite .token-art { opacity:0 !important; }
-.combat-action-sprite {
-  position:absolute;
-  z-index:5;
-  left:50%;
-  bottom:0;
-  width:auto;
-  height:auto;
-  max-width:none;
-  image-rendering:pixelated;
-  pointer-events:none;
-  transform:translateX(-50%);
-  transform-origin:center bottom;
-  filter:drop-shadow(0 4px 0 rgba(0,0,0,.3));
-}
-.fighter-token.player .combat-action-sprite { transform:translateX(-50%) scaleX(-1); }
-.combat-action-sprite.attack { max-height:190%; }
-.combat-action-sprite.hurt { max-height:165%; }
-@media (max-width:700px) {
-  .combat-action-sprite.attack { max-height:165%; }
-  .combat-action-sprite.hurt { max-height:145%; }
-}
+.fighter-token.is-hit .token-art { animation:hit-sprite-flash .56s steps(1,end) !important; }
 @keyframes skill-flight {
   0% { opacity:0; transform:translate(-50%,-50%) scale(.55) rotate(-18deg); }
   18% { opacity:1; }
@@ -369,8 +348,13 @@
 }
 @keyframes fighter-hit {
   0%,100% { transform:translateX(-50%); filter:drop-shadow(0 7px 0 rgba(0,0,0,.3)); }
-  18%,54% { transform:translateX(calc(-50% + var(--hit-x))); filter:brightness(2) drop-shadow(0 7px 0 rgba(255,255,255,.8)); }
-  36%,72% { transform:translateX(calc(-50% - var(--hit-x))); filter:brightness(.8) drop-shadow(0 7px 0 rgba(0,0,0,.3)); }
+  18%,54% { transform:translateX(calc(-50% + var(--hit-x))); filter:drop-shadow(0 7px 0 rgba(255,60,60,.85)); }
+  36%,72% { transform:translateX(calc(-50% - var(--hit-x))); filter:drop-shadow(0 7px 0 rgba(0,0,0,.3)); }
+}
+@keyframes hit-sprite-flash {
+  0%,100% { filter:none; }
+  15%,52% { filter:sepia(1) saturate(8) hue-rotate(315deg) brightness(1.32) drop-shadow(0 0 8px rgba(255,54,54,.95)); }
+  34%,70% { filter:brightness(.82) saturate(.8); }
 }
 
 /* Action target telegraphs: visible briefly before the action resolves. */
