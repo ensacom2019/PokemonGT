@@ -1,7 +1,7 @@
 (() => {
   const GEN3 = [
     {
-      id: 'treecko', name: '\uB098\uBB34\uC9C0\uAE30', ko: '\uD480 \uD0C0\uC785', gen: '3\uC138\uB300 / \uD480', type: '\uD480', className: 'grass', stats: '\uAE30\uBBFC\uD615', signatureSkill: '\uB9AC\uD504\uBE14\uB808\uC774\uB4DC', image: 'assets/pokemon/pixel/treecko.png',
+      id: 'treecko', name: '\uB098\uBB34\uC9C0\uAE30', ko: '\uD480 \uD0C0\uC785', gen: '3\uC138\uB300 / \uD480', type: '\uD480', emoji: '\uD83C\uDF3F', className: 'grass', stats: '\uAE30\uBBFC\uD615', signatureSkill: '\uB9AC\uD504\uBE14\uB808\uC774\uB4DC', image: 'assets/pokemon/pixel/treecko.png',
       attacks: [
         { id: 'treecko-absorb', name: '\uD761\uC218', ko: '\uC0DD\uAE30\uB97C \uBE7C\uC557\uB294 \uC78E', icon: '\u2737', kind: 'attack', priority: 4, energy: 18, label: '\uD761\uC218', damage: 22, range: 3 },
         { id: 'treecko-quick-attack', name: '\uC804\uAD11\uC11D\uD654', ko: '\uBE60\uB978 \uB3CC\uC9C4', icon: '\u27A4', kind: 'attack', priority: 5, energy: 21, label: '\uC804\uAD11\uC11D\uD654', damage: 30, range: 1 },
@@ -9,7 +9,7 @@
       ]
     },
     {
-      id: 'torchic', name: '\uC544\uCC28\uBAA8', ko: '\uBD88\uAF43 \uD0C0\uC785', gen: '3\uC138\uB300 / \uBD88\uAF43', type: '\uBD88\uAF43', className: 'fire', stats: '\uC5F0\uD0C0\uD615', signatureSkill: '\uBE14\uB808\uC774\uC988\uD0A5', image: 'assets/pokemon/pixel/torchic.png',
+      id: 'torchic', name: '\uC544\uCC28\uBAA8', ko: '\uBD88\uAF43 \uD0C0\uC785', gen: '3\uC138\uB300 / \uBD88\uAF43', type: '\uBD88\uAF43', emoji: '\uD83D\uDD25', className: 'fire', stats: '\uC5F0\uD0C0\uD615', signatureSkill: '\uBE14\uB808\uC774\uC988\uD0A5', image: 'assets/pokemon/pixel/torchic.png',
       attacks: [
         { id: 'torchic-peck', name: '\uCABC', ko: '\uBD80\uB9AC\uB85C \uCC0C\uB974\uAE30', icon: '\u27A4', kind: 'attack', priority: 5, energy: 20, label: '\uCABC', damage: 28, range: 1 },
         { id: 'torchic-ember', name: '\uBD88\uAF43\uC138\uB840', ko: '\uC791\uC740 \uBD88\uAF43', icon: '\u2623', kind: 'attack', priority: 4, energy: 19, label: '\uBD88\uAF43\uC138\uB840', damage: 26, range: 2 },
@@ -17,7 +17,7 @@
       ]
     },
     {
-      id: 'mudkip', name: '\uBB3C\uC9F1\uC774', ko: '\uBB3C \uD0C0\uC785', gen: '3\uC138\uB300 / \uBB3C', type: '\uBB3C', className: 'water', stats: '\uADE0\uD615\uD615', signatureSkill: '\uBA38\uB4DC\uBD04', image: 'assets/pokemon/pixel/mudkip.png',
+      id: 'mudkip', name: '\uBB3C\uC9F1\uC774', ko: '\uBB3C \uD0C0\uC785', gen: '3\uC138\uB300 / \uBB3C', type: '\uBB3C', emoji: '\uD83D\uDCA7', className: 'water', stats: '\uADE0\uD615\uD615', signatureSkill: '\uBA38\uB4DC\uBD04', image: 'assets/pokemon/pixel/mudkip.png',
       attacks: [
         { id: 'mudkip-water-gun', name: '\uBB3C\uB300\uD3EC', ko: '\uAC15\uD55C \uBB3C\uC904\uAE30', icon: '\u2248', kind: 'attack', priority: 4, energy: 18, label: '\uBB3C\uB300\uD3EC', damage: 22, range: 3 },
         { id: 'mudkip-tackle', name: '\uBAB8\uD1B5\uBC15\uCE58\uAE30', ko: '\uBB35\uC9C1\uD55C \uBAB8\uD1B5\uBC15\uCE58\uAE30', icon: '\u2726', kind: 'attack', priority: 5, energy: 22, label: '\uBAB8\uD1B5\uBC15\uCE58\uAE30', damage: 32, range: 1 },

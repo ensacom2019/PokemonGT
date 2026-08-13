@@ -1,7 +1,7 @@
 (() => {
   const GEN4 = [
     {
-      id:'turtwig', name:'\uBAA8\uBD80\uAE30', ko:'\uD480 \uD0C0\uC785', gen:'4\uC138\uB300 / \uD480', type:'\uD480', className:'grass', stats:'\uBC29\uC5B4\uD615', signatureSkill:'\uC5D0\uB108\uC9C0\uBCFC', image:'assets/pokemon/pixel/turtwig.png',
+      id:'turtwig', name:'\uBAA8\uBD80\uAE30', ko:'\uD480 \uD0C0\uC785', gen:'4\uC138\uB300 / \uD480', type:'\uD480', emoji:'\uD83C\uDF31', className:'grass', stats:'\uBC29\uC5B4\uD615', signatureSkill:'\uC5D0\uB108\uC9C0\uBCFC', image:'assets/pokemon/pixel/turtwig.png',
       attacks:[
         { id:'turtwig-razor-leaf', name:'\uC78E\uB0A0\uAC00\uB974\uAE30', ko:'\uC815\uBA74\uC73C\uB85C \uB0A0\uB9AC\uB294 \uC78E', icon:'\u2726', kind:'attack', priority:4, energy:19, label:'\uC78E\uB0A0\uAC00\uB974\uAE30', damage:24, range:3, pattern:[2,5,8] },
         { id:'turtwig-bite', name:'\uBB3C\uAE30', ko:'\uBC14\uB85C \uC55E\uC5D0\uC11C \uAE68\uBB34\uAE30', icon:'\u25C6', kind:'attack', priority:5, energy:23, label:'\uBB3C\uAE30', damage:32, range:1, pattern:[5] },
@@ -9,7 +9,7 @@
       ]
     },
     {
-      id:'chimchar', name:'\uBD88\uAF43\uC22D\uC774', ko:'\uBD88\uAF43 \uD0C0\uC785', gen:'4\uC138\uB300 / \uBD88\uAF43', type:'\uBD88\uAF43', className:'fire', stats:'\uAE30\uB3D9\uD615', signatureSkill:'\uD30C\uC774\uC5B4\uD380\uCE58', image:'assets/pokemon/pixel/chimchar.png',
+      id:'chimchar', name:'\uBD88\uAF43\uC22D\uC774', ko:'\uBD88\uAF43 \uD0C0\uC785', gen:'4\uC138\uB300 / \uBD88\uAF43', type:'\uBD88\uAF43', emoji:'\uD83D\uDD25', className:'fire', stats:'\uAE30\uB3D9\uD615', signatureSkill:'\uD30C\uC774\uC5B4\uD380\uCE58', image:'assets/pokemon/pixel/chimchar.png',
       attacks:[
         { id:'chimchar-scratch', name:'\uD560\uD034\uAE30', ko:'\uBE60\uB974\uAC8C \uADFC\uC811 \uD0C0\uACA9', icon:'\u2739', kind:'attack', priority:5, energy:21, label:'\uD560\uD034\uAE30', damage:30, range:1, pattern:[5] },
         { id:'chimchar-ember', name:'\uBD88\uAF43\uC138\uB840', ko:'\uC55E\uC73C\uB85C \uD37C\uC9C0\uB294 \uBD88\uAF43', icon:'\uD83D\uDD25', kind:'attack', priority:4, energy:19, label:'\uBD88\uAF43\uC138\uB840', damage:26, range:2, pattern:[2,5,8] },
@@ -17,7 +17,7 @@
       ]
     },
     {
-      id:'piplup', name:'\uD33D\uB3C4\uB9AC', ko:'\uBB3C \uD0C0\uC785', gen:'4\uC138\uB300 / \uBB3C', type:'\uBB3C', className:'water', stats:'\uC6D0\uAC70\uB9AC\uD615', signatureSkill:'\uAC70\uD488\uAD11\uC120', image:'assets/pokemon/pixel/piplup.png',
+      id:'piplup', name:'\uD33D\uB3C4\uB9AC', ko:'\uBB3C \uD0C0\uC785', gen:'4\uC138\uB300 / \uBB3C', type:'\uBB3C', emoji:'\uD83D\uDCA7', className:'water', stats:'\uC6D0\uAC70\uB9AC\uD615', signatureSkill:'\uAC70\uD488\uAD11\uC120', image:'assets/pokemon/pixel/piplup.png',
       attacks:[
         { id:'piplup-peck', name:'\uCABC', ko:'\uC55E\uC5D0\uC11C \uCC0C\uB974\uB294 \uBD80\uB9AC', icon:'\u25B6', kind:'attack', priority:5, energy:21, label:'\uCABC', damage:29, range:1, pattern:[5] },
         { id:'piplup-water-gun', name:'\uBB3C\uB300\uD3EC', ko:'\uC815\uBA74 \uC138 \uCE78\uC744 \uB530\uB77C\uAC00\uB294 \uBB3C\uC904\uAE30', icon:'\u2248', kind:'attack', priority:4, energy:18, label:'\uBB3C\uB300\uD3EC', damage:23, range:3, pattern:[2,5,8] },
