@@ -488,7 +488,7 @@
 @media (max-width:700px) { .reward-options,.stage-event-options { grid-template-columns:1fr; } .reward-heading strong,.event-heading strong { font-size:20px; } }
 
 /* Temporary field items: collectible by either fighter and limited to the current battle. */
-.field-item { position:absolute; z-index:2; left:50%; bottom:12%; display:grid; place-items:center; width:34px; height:34px; transform:translateX(-50%); pointer-events:none; filter:drop-shadow(0 3px 0 rgba(0,0,0,.38)); animation:field-item-drop .55s ease-out,field-item-float 1.4s ease-in-out .55s infinite alternate; }
+.field-item { position:absolute; z-index:2; left:50%; top:50%; bottom:auto; display:grid; place-items:center; width:34px; height:34px; transform:translate(-50%,-50%); pointer-events:none; filter:drop-shadow(0 3px 0 rgba(0,0,0,.38)); animation:field-item-drop .55s ease-out,field-item-float 1.4s ease-in-out .55s infinite alternate; }
 .field-item:before { content:''; position:absolute; inset:-5px; border:1px solid rgba(255,239,157,.72); border-radius:50%; background:radial-gradient(circle,rgba(255,244,174,.28),transparent 68%); box-shadow:0 0 14px rgba(255,211,96,.42); }
 .field-item img { position:relative; width:30px; height:30px; object-fit:contain; image-rendering:pixelated; }
 .field-item-attack:before { border-color:rgba(255,116,102,.75); box-shadow:0 0 14px rgba(255,105,94,.48); }
@@ -503,6 +503,6 @@
 .battle-item-effect.attack { border-color:rgba(255,105,94,.55); }
 .battle-item-effect.energy { border-color:rgba(255,189,98,.55); }
 .battle-item-effect.defense { border-color:rgba(101,229,226,.55); }
-@keyframes field-item-drop { from { opacity:0; transform:translate(-50%,-18px) scale(.55); } to { opacity:1; transform:translate(-50%,0) scale(1); } }
+@keyframes field-item-drop { from { opacity:0; transform:translate(-50%,calc(-50% - 18px)) scale(.55); } to { opacity:1; transform:translate(-50%,-50%) scale(1); } }
 @keyframes field-item-float { from { margin-bottom:0; } to { margin-bottom:6px; } }
-@media (max-width:700px) { .field-item { width:29px; height:29px; bottom:9%; } .field-item img { width:26px; height:26px; } .battle-item-effects { margin-top:6px; } }
+@media (max-width:700px) { .field-item { width:29px; height:29px; } .field-item img { width:26px; height:26px; } .battle-item-effects { margin-top:6px; } }
