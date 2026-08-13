@@ -37,6 +37,7 @@
   let multiplayerResultShown = false;
   let lastCountdownNumber = null;
   let resultReturnTimer = null;
+  let partnerRetryTimer = null;
 
   const firebase = () => window.pokemonFirebase;
   const isMulti = () => Boolean(roomCode && roomRole && state.multiplayer?.roomCode === roomCode);
@@ -77,7 +78,7 @@
   };
   const cleanFighter = (fighter) => {
     if (!fighter) return null;
-    return {
+    const saved = {
       id: fighter.id, baseId: fighter.baseId || fighter.id, name: fighter.name, ko: fighter.ko,
       gen: fighter.gen, type: fighter.type, emoji: fighter.emoji, image: fighter.image,
       className: fighter.className, stats: fighter.stats, passive: fighter.passive || null,
@@ -89,6 +90,7 @@
       evolutionId: fighter.evolutionId || null, fieldItemEffects: clone(fighter.fieldItemEffects || []),
       attacks: (fighter.attacks || []).map(cleanCard),
     };
+    return Object.fromEntries(Object.entries(saved).filter(([, value]) => value !== undefined));
   };
   const restoreFighter = (saved, side, mirror = false) => {
     const base = pokemonById(saved?.baseId || saved?.id) || pokemonById(saved?.id) || {};
@@ -116,6 +118,7 @@
     roomCode = null; roomRole = null; pendingMode = null; resolving = false; applyingSnapshot = false; initializingBattle = false; multiplayerResultShown = false;
     clearInterval(selectionTicker); selectionTicker = null; selectionDeadline = null; timeoutFilling = false;
     clearTimeout(resultReturnTimer); resultReturnTimer = null;
+    clearTimeout(partnerRetryTimer); partnerRetryTimer = null;
     lastCountdownNumber = null;
     if (countdownOverlay) countdownOverlay.hidden = true;
     delete state.roomPartnerCode;
@@ -355,6 +358,11 @@
       await updateRoom({ [ownPokemonKey()]: pokemon.id, [`${ownKey()}ConnectedAt`]: Date.now() });
       $('#selection-status').textContent = `${pokemon.name} 선택 완료 · 상대를 기다리는 중입니다.`;
       confirm.innerHTML = '파트너 선택 완료';
+      if (roomRole === 'host') {
+        const service = await apiReady();
+        const latest = await service.api.getDoc(service.api.doc(service.db, ROOM_COLLECTION, roomCode));
+        if (latest.exists()) await ensurePartnerBattle(latest.data());
+      }
     } catch (error) {
       console.error(error);
       confirm.disabled = false;
@@ -379,9 +387,30 @@
     } catch (error) {
       console.error('전장 초기화 실패', error);
       statusText('전장 준비를 다시 시도 중입니다.', 'is-warning');
+      clearTimeout(partnerRetryTimer);
+      partnerRetryTimer = setTimeout(() => ensurePartnerBattle(), 750);
     } finally {
       initializingBattle = false;
     }
+  };
+  const ensurePartnerBattle = async (room = null) => {
+    if (!isMulti() || roomRole !== 'host' || initializingBattle) return;
+    let latestRoom = room;
+    if (!latestRoom) {
+      try {
+        const service = await apiReady();
+        const snapshot = await service.api.getDoc(service.api.doc(service.db, ROOM_COLLECTION, roomCode));
+        if (!snapshot.exists()) return;
+        latestRoom = snapshot.data();
+      } catch (error) {
+        console.warn('파트너 선택 상태를 다시 확인하지 못했습니다.', error);
+        return;
+      }
+    }
+    const readyToStart = ['partner-select', 'selecting'].includes(latestRoom.status)
+      && latestRoom.hostPokemonId && latestRoom.guestPokemonId
+      && !(latestRoom.battleState?.host && latestRoom.battleState?.guest);
+    if (readyToStart) await hostInitializeBattle(latestRoom);
   };
   const applyRoomBattle = (room) => {
     const battle = room.battleState;
@@ -503,11 +532,11 @@
     setWaitingHostUi(false);
     if (room.status === 'partner-select') {
       showPartnerSelect(room);
-      if (roomRole === 'host' && room.hostPokemonId && room.guestPokemonId) await hostInitializeBattle(room);
+      await ensurePartnerBattle(room);
       return;
     }
     if (roomRole === 'host' && room.status === 'selecting' && (!room.battleState?.host || !room.battleState?.guest)) {
-      await hostInitializeBattle(room); return;
+      await ensurePartnerBattle(room); return;
     }
     const hostResolvingLocally = roomRole === 'host' && resolving && room.status === 'resolving';
     applyingSnapshot = !hostResolvingLocally;
